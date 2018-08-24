@@ -3,15 +3,13 @@ Requires: matplotlib, astropy, zchecker, sqlite3, php with sqlite3 support
 Setup
 -----
 
-#. Create directory structure for website.
+1. Create directory structure for website.
    * site/
      * img/
        * lightcurves/
        * pointing/
        * stacks/
-         * target directories
-         * ...
-#. Copy www/* to site/ directory.
+2. Copy www/* to site/ directory.
 
 Daily
 -----
