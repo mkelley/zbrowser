@@ -39,18 +39,18 @@ export ZWEB=/path/to/web/site
 export ZBSR=/path/to/zbrowser
 
 # replot missing images for one target:
-python3 ${ZBSR}/scripts/stack2web.py --desg='C/2016 R2' ${ZWEB}/img/stack
+python3 ${ZBSR}/scripts/stack2web.py --desg='C/2016 R2' ${ZWEB}/img/stacks
 
 # replot all images for one target:
-python3 ${ZBSR}/scripts/stack2web.py --desg='C/2016 R2' -f ${ZWEB}/img/stack
+python3 ${ZBSR}/scripts/stack2web.py --desg='C/2016 R2' -f ${ZWEB}/img/stacks
 
 # similarly for one date:
-python3 ${ZBSR}/scripts/stack2web.py --date=2018-08-23 ${ZWEB}/img/stack
-python3 ${ZBSR}/scripts/stack2web.py --date=2018-08-23 -f ${ZWEB}/img/stack
+python3 ${ZBSR}/scripts/stack2web.py --date=2018-08-23 ${ZWEB}/img/stacks
+python3 ${ZBSR}/scripts/stack2web.py --date=2018-08-23 -f ${ZWEB}/img/stacks
 
 # or, for all dates all targets:
-python3 ${ZBSR}/scripts/stack2web.py --full-update ${ZWEB}/img/stack
+python3 ${ZBSR}/scripts/stack2web.py --full-update ${ZWEB}/img/stacks
 
 # force update all images:
-python3 ${ZBSR}/scripts/stack2web.py --full-update -f ${ZWEB}/img/stack
+python3 ${ZBSR}/scripts/stack2web.py --full-update -f ${ZWEB}/img/stacks
 ```
