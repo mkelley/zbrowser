@@ -21,9 +21,9 @@ export ZDATA=/path/to/zchecker/output
 export ZWEB=/path/to/web/site
 (cd $ZDATA; sqlite3 <${ZBSR}/scripts/dump-foundobs.sql)
 mv /tmp/foundobs.db ${ZWEB}/
-python3 zbrowser/scripts/pointing.py --frame=equatorial -d ${ZWEB}/img/pointing
-python3 zbrowser/scripts/pointing.py --frame=ecliptic -d ${ZWEB}/img/pointing
-python3 zbrowser/scripts/pointing.py --frame=galactic -d ${ZWEB}/img/pointing
+python3 zbrowser/scripts/pointing.py --frame=equatorial ${ZWEB}/img/pointing
+python3 zbrowser/scripts/pointing.py --frame=ecliptic ${ZWEB}/img/pointing
+python3 zbrowser/scripts/pointing.py --frame=galactic ${ZWEB}/img/pointing
 python3 zbrowser/scripts/stack2web.py -d ${ZWEB}/img/stack
 ```
 
