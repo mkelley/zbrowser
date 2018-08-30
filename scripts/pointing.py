@@ -1,6 +1,8 @@
 import os
 import argparse
 import numpy as np
+import matplotlib
+matplotlib.use('agg')
 import matplotlib.pyplot as plt
 from astropy.time import Time
 import astropy.units as u
