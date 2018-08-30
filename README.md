@@ -21,10 +21,10 @@ export ZDATA=/path/to/zchecker/output
 export ZWEB=/path/to/web/site
 (cd $ZDATA; sqlite3 <${ZBSR}/scripts/dump-foundobs.sql)
 mv /tmp/foundobs.db ${ZWEB}/
-python3 zbrowser/scripts/pointing.py --frame=equatorial ${ZWEB}/img/pointing
-python3 zbrowser/scripts/pointing.py --frame=ecliptic ${ZWEB}/img/pointing
-python3 zbrowser/scripts/pointing.py --frame=galactic ${ZWEB}/img/pointing
-python3 zbrowser/scripts/stack2web.py -d ${ZWEB}/img/stack
+python3 ${ZBSR}/scripts/pointing.py --frame=equatorial ${ZWEB}/img/pointing
+python3 ${ZBSR}/scripts/pointing.py --frame=ecliptic ${ZWEB}/img/pointing
+python3 ${ZBSR}/scripts/pointing.py --frame=galactic ${ZWEB}/img/pointing
+python3 ${ZBSR}/scripts/stack2web.py -d ${ZWEB}/img/stack
 ```
 
 Occasionally
@@ -36,20 +36,21 @@ be replotted:
 
 ```
 export ZWEB=/path/to/web/site
+export ZBSR=/path/to/zbrowser
 
 # replot missing images for one target:
-python3 zbrowser/scripts/stack2web.py --desg='C/2016 R2' ${ZWEB}/img/stack
+python3 ${ZBSR}/scripts/stack2web.py --desg='C/2016 R2' ${ZWEB}/img/stack
 
 # replot all images for one target:
-python3 zbrowser/scripts/stack2web.py --desg='C/2016 R2' -f ${ZWEB}/img/stack
+python3 ${ZBSR}/scripts/stack2web.py --desg='C/2016 R2' -f ${ZWEB}/img/stack
 
 # similarly for one date:
-python3 zbrowser/scripts/stack2web.py --date=2018-08-23 ${ZWEB}/img/stack
-python3 zbrowser/scripts/stack2web.py --date=2018-08-23 -f ${ZWEB}/img/stack
+python3 ${ZBSR}/scripts/stack2web.py --date=2018-08-23 ${ZWEB}/img/stack
+python3 ${ZBSR}/scripts/stack2web.py --date=2018-08-23 -f ${ZWEB}/img/stack
 
 # or, for all dates all targets:
-python3 zbrowser/scripts/stack2web.py --full-update ${ZWEB}/img/stack
+python3 ${ZBSR}/scripts/stack2web.py --full-update ${ZWEB}/img/stack
 
 # force update all images:
-python3 zbrowser/scripts/stack2web.py --full-update -f ${ZWEB}/img/stack
+python3 ${ZBSR}/scripts/stack2web.py --full-update -f ${ZWEB}/img/stack
 ```
