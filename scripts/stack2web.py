@@ -46,10 +46,10 @@ def plot(inf, outf):
     from astropy.io import fits
     from astropy.stats import sigma_clipped_stats
 
-    fig = plt.figure(1, (8, 4))
+    fig = plt.figure(1, (9, 3))
     fig.clear()
     axes = [fig.add_subplot(gs) for gs in
-            plt.GridSpec(1, 2, wspace=0, hspace=0, left=0, right=1,
+            plt.GridSpec(1, 3, wspace=0, hspace=0, left=0, right=1,
                          bottom=0, top=1)]
 
     cmap = mpl.cm.get_cmap('viridis')
@@ -66,7 +66,8 @@ def plot(inf, outf):
         mms = sigma_clipped_stats(hdu[k].data)
         opts = dict(cmap=cmap, vmin=-2 * mms[2], vmax=5 * mms[2])
         axes[0].imshow(hdu['coma scaled'].data, **opts)
-        axes[1].imshow(baselined, **opts)
+        axes[1].imshow(hdu['coma scaled'].data - baselined, **opts)
+        axes[2].imshow(baselined, **opts)
 
         shape = np.array(hdu['coma scaled'].data.shape)
         for i in range(2):
@@ -77,7 +78,7 @@ def plot(inf, outf):
             axes[i].plot(x[2:][::-1], x[:2], color='0.75')
 
     plt.setp(axes, frame_on=False, xticks=[], yticks=[])
-    fig.savefig(outf, dpi=300 / 4)
+    fig.savefig(outf, dpi=300 / 3)
     plt.close()
 
 ########################################################################
