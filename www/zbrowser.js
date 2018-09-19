@@ -168,6 +168,7 @@ function obsByTarget(data) {
       { title: 'Phase (deg)' },
       { title: 'f (deg)' },
       { title: 'T-T<sub>P</sub> (days)' },
+      { title: 'Images' },
     ]
   });
 }

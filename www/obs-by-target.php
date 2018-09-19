@@ -19,12 +19,22 @@ if (in_array($query['target'], $targets)) {
     $data['target'] = $query['target'];
     $data['table'] = array();
 
-    $result = $db->query("SELECT desg,date,dra,ddec,ra3sig,dec3sig,vmag,rh,rdot,delta,phase,trueanomaly,tmtp,filtercode FROM foundobs INNER JOIN nights ON foundobs.nightid=nights.nightid WHERE desg='".$query['target']."' ORDER BY obsjd DESC");
+    $result = $db->query("SELECT desg,date,dra,ddec,ra3sig,dec3sig,vmag,rh,rdot,delta,phase,trueanomaly,tmtp,filtercode,filefracday,field,ccdid,qid FROM foundobs INNER JOIN nights ON foundobs.nightid=nights.nightid WHERE desg='".$query['target']."' ORDER BY obsjd DESC");
     while($row = $result->fetchArray()) {
         $rh = $row['rh'];
         if ($row['rdot'] < 0) {
             $rh = -1 * $rh;
         }
+	$url = sprintf(
+	  'https://irsa.ipac.caltech.edu/ibe/data/ztf/products/sci/%s/%s/%s/ztf_%s_%06d_%s_c%02d_o_q%1d_',
+	  substr($row['filefracday'], 0, 4),
+	  substr($row['filefracday'], 4, 4),
+	  substr($row['filefracday'], 8),
+	  $row['filefracday'],
+	  $row['field'],
+	  $row['filtercode'],
+	  $row['ccdid'],
+	  $row['qid']);
         
         array_push($data['table'], array(
             str_replace(' ', '&nbsp;', $row['desg']),
@@ -37,7 +47,9 @@ if (in_array($query['target'], $targets)) {
             round($row['delta'], 3),
             round($row['phase'], 1),
             round($row['trueanomaly'], 1),
-            round($row['tmtp'], 1)
+            round($row['tmtp'], 1),
+	    '<a href="' . $url . 'sciimg.fits">sci</a> <a href="'
+	    . $url . 'scimrefdiffimg.fits.fz">diff</a>'
         ));
     }
 
