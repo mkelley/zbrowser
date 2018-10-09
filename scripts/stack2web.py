@@ -113,7 +113,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Convert ZChecker stacks to plots for the web.')
     parser.add_argument('destination', help='destination directory')
-    parser.add_argument('--desg', help='plot all images for this target')
+    parser.add_argument('--desg', help='plot all images for these targets')
     parser.add_argument('--date', type=Date, default=today,
                         help='plot all images for this date, YYYY-MM-DD, default is today')
     parser.add_argument('-f', action='store_true', help='force overwrite')
@@ -133,31 +133,32 @@ if __name__ == '__main__':
     with ZChecker(config) as z:
         path = z.config['stack path']
         if args.desg is not None:
-            stacks = stacks_by_desg(z, args.desg)
+            stacks = [stacks_by_desg(z, desg) for desg in args.desg.split(',')]
         elif args.full_update:
-            stacks = all_stacks(z, args.f)
+            stacks = [all_stacks(z, args.f)]
         else:
-            stacks = stacks_by_date(z, args.date)
+            stacks = [stacks_by_date(z, args.date)]
 
-        for row in stacks:
-            stack = row[0]
-            inf = os.path.join(path, stack)
-            basename = stack.replace('.fits.gz', '.png')
-            outf = os.path.join(args.destination, basename)
-            try:
-                check_path(outf)
-            except FileExistsError:
-                if args.f:
-                    pass
-                elif args.full_update:
-                    stack_time = str(row[1])
-                    plot_time = datetime.fromtimestamp(
-                        os.path.getmtime(outf)).isoformat().replace('T', ' ')
-                    if plot_time > stack_time:
+        for i in range(len(stacks)):
+            for row in stacks[i]:
+                stack = row[0]
+                inf = os.path.join(path, stack)
+                basename = stack.replace('.fits.gz', '.png')
+                outf = os.path.join(args.destination, basename)
+                try:
+                    check_path(outf)
+                except FileExistsError:
+                    if args.f:
+                        pass
+                    elif args.full_update:
+                        stack_time = str(row[1])
+                        plot_time = datetime.fromtimestamp(
+                            os.path.getmtime(outf)).isoformat().replace('T', ' ')
+                        if plot_time > stack_time:
+                            continue
+                    else:
+                        z.logger.debug('{} already exists'.format(basename))
                         continue
-                else:
-                    z.logger.debug('{} already exists'.format(basename))
-                    continue
 
-            plot(inf, outf)
-            z.logger.info('{}'.format(basename))
+                plot(inf, outf)
+                z.logger.info('{}'.format(basename))
