@@ -116,15 +116,18 @@ function status(data) {
 	'</a> (' + filter + ', ' + rh + ' au, maglimit=' + maglimit + ')';
     stacks.append(card(12, title, img));
   }
+
+  $('#z-summary-loading-indicator').removeClass('loading');
 }
 
 function obsByTarget(data) {
   let lightcurve = $('#z-target-lightcurve');
+  let stacks = $('#z-target-stacks');
+  let targetTable = $('#z-obs-by-target-table');
+
+  stacks.empty();
   lightcurve.empty();
 
-  let stacks = $('#z-target-stacks');
-  stacks.empty();
-  
   let tableData;
   if (data['valid'] !== false) {
     tableData = data['table'];
@@ -152,7 +155,7 @@ function obsByTarget(data) {
     tableData = [];
   }
   
-  $('#z-obs-by-target-table').DataTable({
+  targetTable.DataTable({
     destroy: true,
     data: tableData,
     order: [],
@@ -171,11 +174,14 @@ function obsByTarget(data) {
       { title: 'Images' },
     ]
   });
+
+  $('#z-obs-by-target-loading-indicator').removeClass('loading');
 }
 
 $(document).ready(function() {
   $('#z-obs-by-target-form').submit(function(e) {
     e.preventDefault();
+    $('#z-obs-by-target-loading-indicator').addClass('loading');
     query('obs-by-target', $('#z-target-input').val())
       .then(data => obsByTarget(data));
   });
@@ -195,6 +201,7 @@ $(document).ready(function() {
     // default: status
     $('main').hide();
     $('#status').show();
+    $('#z-summary-loading-indicator').addClass('loading');
     setup().then(() => query('status')).then(data => status(data));  
   }
 });
