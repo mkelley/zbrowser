@@ -8,11 +8,11 @@ $data['nights with data'] = $db->querySingle('SELECT COUNT() FROM nights WHERE n
 $data['most recent night checked'] = $db->querySingle('SELECT date FROM nights ORDER BY date DESC LIMIT 1');
 
 $lastNightId = $db->querySingle('SELECT nightid FROM nights ORDER BY date DESC LIMIT 1');
-$lastWeek = date('Y-m-d', time() - 604800);
+$recentNights = date('Y-m-d', time() - 259200);
 
 $data['targets with coverage'] = $db->querySingle('SELECT COUNT(DISTINCT desg) FROM foundobs');
 
-$result = $db->query("SELECT desg,SUM(foundobs.nightid=".$lastNightId."),COUNT(),ROUND(AVG(rh), 1),ROUND(AVG(delta),1),CAST(ROUND(AVG(vmag)) AS INT) FROM foundobs INNER JOIN nights ON foundobs.nightid = nights.nightid WHERE date > '".$lastWeek."' GROUP BY desg ORDER BY desg + 0,desg");
+$result = $db->query("SELECT desg,SUM(foundobs.nightid=".$lastNightId."),COUNT(),ROUND(AVG(rh), 1),ROUND(AVG(delta),1),CAST(ROUND(AVG(vmag)) AS INT) FROM foundobs INNER JOIN nights ON foundobs.nightid = nights.nightid WHERE date > '".$recentNights."' GROUP BY desg ORDER BY desg + 0,desg");
 $data['target table'] = array();
 $data['targets observed last night'] = array();
 while ($row = $result->fetchArray(SQLITE3_NUM)) {

@@ -2,13 +2,15 @@
 'use strict';
 
 function query(parameter, search) {
-  if (['status', 'obs-by-target', 'targets'].indexOf(parameter) === -1) {
+  if (['status', 'obs-by-target', 'obs-by-date', 'targets'].indexOf(parameter) === -1) {
     throw new Error('Bad internal query: ' + parameter);
   }
 
   let q = "";
   if (['obs-by-target'].indexOf(parameter) !== -1) {
     q = "?target=" + encodeURIComponent(search);
+  } else if (['obs-by-date'].indexOf(parameter) !== -1) {
+    q = "?date=" + encodeURIComponent(search);
   }
 
   return new Promise(function(resolve, reject) {
@@ -54,24 +56,7 @@ function card(size, title, img) {
 }
 
 function status(data) {
-  $('#z-recent-target-table').DataTable({
-    data: data['target table'],
-    order: [],
-    paging: false,
-    columns: [
-      { title: 'Target',
-	render: function(data, type, row, meta) {
-	  return '<a href="?obs-by-target=' + encodeURI(data) + '">'
-	    + data + '</a>';
-	}
-      },
-      { title: 'N<sub>cov</sub> last night' },
-      { title: 'N<sub>cov</sub> last week' },
-      { title: '&lt;r<sub>h</sub>&gt; (au)' },
-      { title: '&lt;&Delta;&gt; (au)' },
-      { title: '&lt;V<sub>JPL</sub>&gt; (mag)' }
-    ]
-  });
+  obsByDate(data);
   
   let ul = $('#z-summary-list');
   let li = $('<li>').append('Nights in database: ' + data['nights']);
@@ -89,7 +74,7 @@ function status(data) {
   li.append(subul);
   ul.append(li);
 
-  let pointing = $('#z-status-pointing');
+  let pointing = $('#z-pointing');
   let frames = {
     'Equatorial': 'eq',
     'Ecliptic': 'ec',
@@ -97,33 +82,70 @@ function status(data) {
   }
   for (var frame in frames) {
     pointing.append(card(
-      4, 'Pointing: ' + frame,
+      4, frame,
       'img/pointing/' + data['most recent night checked'] + '-'
 	+ frames[frame]	+ '.png'
     ));
   }
   
-  let stacks = $('#z-status-stacks');
-  for (var i = 0; i < data['stacks'].length; i++) {
-    let desg = data['stacks'][i][0];
-    let filter = data['stacks'][i][1];
-    let stack = data['stacks'][i][2];
-    let maglimit = data['stacks'][i][3].toFixed(1);
-    let rh = data['stacks'][i][4].toFixed(3);
-
-    let img = 'img/stacks/' + stack.replace('.fits.gz', '.png')
-    let title = '<a href="?obs-by-target=' + desg + '">' + desg +
-	'</a> (' + filter + ', ' + rh + ' au, maglimit=' + maglimit + ')';
-    stacks.append(card(12, title, img));
-  }
-
   $('#z-summary-loading-indicator').removeClass('loading');
 }
 
+function obsByDate(data) {
+  $('#z-lightcurve-section').hide();
+  $('#z-target-lightcurve').empty();
+  let stacks = $('#z-stacks');
+  let targetTable = $('#z-obs-table');
+
+  stacks.empty();
+
+  let tableData;
+  if (data['valid'] !== false) {
+    tableData = data['table'];
+
+    for (var i = 0; i < data['stacks'].length; i++) {
+      let desg = data['stacks'][i][0];
+      let filter = data['stacks'][i][1];
+      let stack = data['stacks'][i][2];
+      let maglimit = data['stacks'][i][3].toFixed(1);
+      let rh = data['stacks'][i][4].toFixed(3);
+
+      let img = 'img/stacks/' + stack.replace('.fits.gz', '.png')
+      let title = '<a href="?obs-by-target=' + desg + '">' + desg +
+	'</a> (' + filter + ', ' + rh + ' au, maglimit=' + maglimit + ')';
+      stacks.append(card(12, title, img));
+    }
+  } else {
+    tableData = [];
+  }
+  
+  targetTable.DataTable({
+    destroy: true,
+    data: tableData,
+    order: [],
+    columns: [
+      { title: 'Target' },
+      { title: 'Date (UT)' },
+      { title: 'Filter' },
+      { title: '&mu; (arcsec/hr)' },
+      { title: 'Eph. 3&sigma; (arcsec)' },
+      { title: 'V<sub>JPL</sub> (mag)' },
+      { title: 'r<sub>h</sub> (au)' },
+      { title: '&Delta; (au)' },
+      { title: 'Phase (deg)' },
+      { title: 'f (deg)' },
+      { title: 'T-T<sub>P</sub> (days)' },
+      { title: 'Images' },
+    ]
+  });
+
+  $('#z-obs-by-date-loading-indicator').removeClass('loading');
+}
+
 function obsByTarget(data) {
-  let lightcurve = $('#z-target-lightcurve');
-  let stacks = $('#z-target-stacks');
-  let targetTable = $('#z-obs-by-target-table');
+  let lightcurve = $('#z-lightcurve');
+  let stacks = $('#z-stacks');
+  let targetTable = $('#z-obs-table');
 
   stacks.empty();
   lightcurve.empty();
@@ -178,29 +200,54 @@ function obsByTarget(data) {
   $('#z-obs-by-target-loading-indicator').removeClass('loading');
 }
 
+function emptyTable(id) {
+  $(id).html('<table class="table table-striped table-sm" id="z-obs-table" data-page-length="50"><thead class="thead-dark"></thead><tbody></tbody></table>');
+}
+
 $(document).ready(function() {
   $('#z-obs-by-target-form').submit(function(e) {
     e.preventDefault();
+    //emptyTable('#z-obs-table');
     $('#z-obs-by-target-loading-indicator').addClass('loading');
     query('obs-by-target', $('#z-target-input').val())
       .then(data => obsByTarget(data));
   });
 
+  $('#z-obs-by-date-form').submit(function(e) {
+    e.preventDefault();
+    emptyTable('#z-obs-table');
+    $('#z-obs-by-date-loading-indicator').addClass('loading');
+    query('obs-by-date', $('#z-date-input').val())
+      .then(data => obsByDate(data));
+  });
+
   let url = new URL(window.location.href);
   if (url.searchParams.get('obs-by-target') !== null) {
     // observations by target
-    $('main').hide();
-    $('#obs-by-target').show();
+    //emptyTable('#z-obs-table');
+    $('#z-pointing-section').hide();
+    $('#z-ligthcurve-section').show();
     if (url.searchParams.get('obs-by-target') != "") {
       $('#z-target-input').val(url.searchParams.get('obs-by-target'));
       setup().then(() => $('#z-obs-by-target-form').submit());
     } else {
       setup();
     }
+  } else if (url.searchParams.get('obs-by-date') !== null) {
+    // observations by date
+    //emptyTable('#z-obs-table');
+    $('#z-pointing-section').hide();
+    $('#z-ligthcurve-section').show();
+    if (url.searchParams.get('obs-by-date') != "") {
+      $('#z-date-input').val(url.searchParams.get('obs-by-date'));
+      setup().then(() => $('#z-obs-by-date-form').submit());
+    } else {
+      setup();
+    }
   } else {
     // default: status
-    $('main').hide();
-    $('#status').show();
+    $('#z-pointing-section').show();
+    $('#z-lightcurve-section').hide();
     $('#z-summary-loading-indicator').addClass('loading');
     setup().then(() => query('status')).then(data => status(data));  
   }

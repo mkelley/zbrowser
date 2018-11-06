@@ -19,7 +19,7 @@ if (in_array($query['target'], $targets)) {
     $data['target'] = $query['target'];
     $data['table'] = array();
 
-    $result = $db->query("SELECT desg,date,dra,ddec,ra3sig,dec3sig,vmag,rh,rdot,delta,phase,trueanomaly,tmtp,filtercode,filefracday,field,ccdid,qid FROM foundobs INNER JOIN nights ON foundobs.nightid=nights.nightid WHERE desg='".$query['target']."' ORDER BY obsjd DESC");
+    $result = $db->query("SELECT desg,obsdate,dra,ddec,ra3sig,dec3sig,vmag,rh,rdot,delta,phase,trueanomaly,tmtp,filtercode,filefracday,field,ccdid,qid FROM foundobs WHERE desg='".$query['target']."' ORDER BY obsjd DESC");
     while($row = $result->fetchArray()) {
         $rh = $row['rh'];
         if ($row['rdot'] < 0) {
@@ -38,7 +38,7 @@ if (in_array($query['target'], $targets)) {
         
         array_push($data['table'], array(
             str_replace(' ', '&nbsp;', $row['desg']),
-            str_replace('-', '&#8209;', $row['date']),
+            str_replace(' ', '&nbsp;', str_replace('-', '&#8209;', substr($row['obsdate'], 0, 16))),
             $row['filtercode'],
             round(hypot($row['dra'], $row['ddec']) * 3600, 2),
             round(hypot($row['ra3sig'], $row['dec3sig']), 2),
