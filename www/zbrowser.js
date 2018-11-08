@@ -143,7 +143,7 @@ function obsByDate(data) {
 }
 
 function obsByTarget(data) {
-  let lightcurve = $('#z-lightcurve');
+  let lightcurve = $('#z-target-lightcurve');
   let stacks = $('#z-stacks');
   let targetTable = $('#z-obs-table');
 
