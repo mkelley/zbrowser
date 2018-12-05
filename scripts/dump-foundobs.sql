@@ -7,9 +7,6 @@ SELECT * FROM nights;
 .once /tmp/stacks.csv
 SELECT * FROM stacks;
 .open /tmp/foundobs.db
-DROP TABLE stacks;
-DROP TABLE nights;
-DROP TABLE foundobs;
 CREATE TABLE foundobs(
     foundid INTEGER PRIMARY KEY,
     desg TEXT,
