@@ -2,7 +2,7 @@
 # query fields
 #   target
 parse_str($_SERVER['QUERY_STRING'], $query);
-$db = new SQLite3('foundobs.db');
+$db = new SQLite3('zchecker.db');
 
 header('Cache-Control:no-cache');
 
@@ -21,7 +21,9 @@ $data['valid'] = true;
 $data['date'] = $date;
 $data['table'] = array();
 
-$result = $db->query("SELECT desg,obsdate,dra,ddec,ra3sig,dec3sig,vmag,rh,rdot,delta,phase,trueanomaly,tmtp,filtercode,filefracday,field,ccdid,qid FROM foundobs INNER JOIN nights ON foundobs.nightid=nights.nightid WHERE nights.date='".$date."' ORDER BY desg+0,desg");
+$nightId = $db->querySingle('SELECT nightid FROM ztf_nights WHERE date="'.$date.'"');
+
+$result = $db->query('SELECT desg,obsdate,ra,dec,dra,ddec,ra3sig,dec3sig,vmag,rh,rdot,delta,phase,trueanomaly,tmtp,filtercode,filefracday,field,ccdid,qid FROM ztf_found INNER JOIN obj USING (objid) WHERE nightid='.$nightId.' ORDER BY desg+0,desg');
 
 while($row = $result->fetchArray()) {
     $rh = $row['rh'];
@@ -44,13 +46,14 @@ while($row = $result->fetchArray()) {
         str_replace(' ', '&nbsp;', $row['desg']),
         str_replace(' ', '&nbsp;', str_replace('-', '&#8209;', substr($row['obsdate'], 0, 16))),
         $row['filtercode'],
-        round(hypot($row['dra'], $row['ddec']) * 3600, 2),
+        $row['ra'],
+        $row['dec'],
+        round(hypot($row['dra'], $row['ddec']), 2),
         round(hypot($row['ra3sig'], $row['dec3sig']), 2),
         round($row['vmag'], 1),
         round($rh, 3),
         round($row['delta'], 3),
         round($row['phase'], 1),
-        round($row['trueanomaly'], 1),
         round($row['tmtp'], 1),
         '<a href="' . $url . 'sciimg.fits">sci</a> <a href="'
         . $url . 'scimrefdiffimg.fits.fz">diff</a>'
@@ -58,7 +61,7 @@ while($row = $result->fetchArray()) {
 }
 
 $data['stacks'] = array();
-$result = $db->query("SELECT DISTINCT desg,filtercode,stackfile,MAX(maglimit),AVG(rh) FROM stacks INNER JOIN foundobs ON stacks.foundid=foundobs.foundid INNER JOIN nights ON foundobs.nightid=nights.nightid WHERE nights.date='".$date."' AND stackfile IS NOT NULL AND stackfile != '' GROUP BY stackfile ORDER BY desg+0,desg");
+$result = $db->query("SELECT stackfile,desg,filtercode,ROUND(MAX(maglimit),1),ROUND(AVG(rh),3) FROM ztf_stacks INNER JOIN ztf_cutouts USING (stackid) INNER JOIN ztf_found USING (foundid) INNER JOIN obj USING (objid) WHERE nightid=".$nightId." GROUP BY stackid ORDER BY desg+0,desg");
 while ($row = $result->fetchArray(SQLITE3_NUM)) {
     array_push($data['stacks'], $row);
 }

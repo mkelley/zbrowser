@@ -1,6 +1,57 @@
 // Licensed under a 3-clause BSD style license - see LICENSE
 'use strict';
 
+function sexagesimal(x, seconds_precision, degrees_width) {
+    /* 
+       seconds_precision : integer
+         decimals after the point, default 3.
+       
+       degrees_width : integer
+         Zero pad the degrees place to this width.  The default is
+         no padding.
+    */
+    if (seconds_precision === undefined) {
+      seconds_precision = 3;
+    }
+
+    let sign = (x < 0)?'-':'+';
+    let d = Math.floor(Math.abs(x));
+    let m = Math.floor((Math.abs(x) - d) * 60);
+    let s = ((Math.abs(x) - d) * 60 - m) * 60;
+
+    let factor = Math.pow(10, seconds_precision);
+    s = Math.round(s * factor) / factor;
+    if (s >= 60) {
+      s -= 60;
+      m += 1;
+    }
+    
+    if (m >= 60) {
+      m -= 60;
+      d += 1;
+    }
+    
+    d = d.toFixed(0);
+    m = m.toFixed(0);
+    s = s.toFixed(seconds_precision);
+    
+    if (degrees_width === undefined) {
+      d = sign + d;
+    } else {
+      d = sign + '0'.repeat(degrees_width - d.length) + d;
+    }
+    
+    m = '0'.repeat(2 - m.length) + m;
+
+    if (seconds_precision == 0) {
+      s = '0'.repeat(2 - s.length) + s;
+    } else {
+      s = '0'.repeat(2 - s.length + seconds_precision + 1) + s;
+    }
+
+    return d + ':' + m + ':' + s;
+}
+
 function query(parameter, search) {
   if (['status', 'obs-by-target', 'obs-by-date', 'targets'].indexOf(parameter) === -1) {
     throw new Error('Bad internal query: ' + parameter);
@@ -35,9 +86,10 @@ function setup() {
   return query('targets').then(
     function(targets) {
       let dataList = $('#targets')[0];
-      targets.forEach(function(target) {
+      $.each(targets, function(objid, desg) {
 	let option = document.createElement('option');
-	option.value = target;
+	option.value = desg;
+	option.dataset.objid = objid;
 	dataList.appendChild(option);
       });
     }
@@ -56,8 +108,6 @@ function card(size, title, img) {
 }
 
 function status(data) {
-  obsByDate(data);
-  
   let ul = $('#z-summary-list');
   let li = $('<li>').append('Nights in database: ' + data['nights']);
   let subul = $('<ul>')
@@ -69,8 +119,7 @@ function status(data) {
   li = $('<li>').append('Targets:');
   subul = $('<ul>')
     .append($('<li>').append('With ZTF coverage: ' + data['targets with coverage']))
-    .append($('<li>').append('Covered on most recent night: ' + data['targets observed last night'].length))
-    .append($('<li>').append('Covered in the last week: ' + data['target table'].length));
+    .append($('<li>').append('Covered on most recent night: ' + data['most recent targets']))
   li.append(subul);
   ul.append(li);
 
@@ -89,6 +138,8 @@ function status(data) {
   }
   
   $('#z-summary-loading-indicator').removeClass('loading');
+
+  return query('obs-by-date', data['most recent night checked']);
 }
 
 function obsByDate(data) {
@@ -104,11 +155,11 @@ function obsByDate(data) {
     tableData = data['table'];
 
     for (var i = 0; i < data['stacks'].length; i++) {
-      let desg = data['stacks'][i][0];
-      let filter = data['stacks'][i][1];
-      let stack = data['stacks'][i][2];
-      let maglimit = data['stacks'][i][3].toFixed(1);
-      let rh = data['stacks'][i][4].toFixed(3);
+      let stack = data['stacks'][i][0];
+      let desg = data['stacks'][i][1];
+      let filter = data['stacks'][i][2];
+      let maglimit = data['stacks'][i][3];      
+      let rh = data['stacks'][i][4];
 
       let img = 'img/stacks/' + stack.replace('.fits.gz', '.png')
       let title = '<a href="?obs-by-target=' + desg + '">' + desg +
@@ -127,13 +178,20 @@ function obsByDate(data) {
       { title: 'Target' },
       { title: 'Date (UT)' },
       { title: 'Filter' },
+      {
+	title: 'RA (hr)',
+	'render': function(data) { return sexagesimal(data / 15, 1, 2).substring(1); }
+      },
+      {
+	title: 'Dec (deg)',
+	'render': function(data) { return sexagesimal(data, 0, 2); }
+      },
       { title: '&mu; (arcsec/hr)' },
       { title: 'Eph. 3&sigma; (arcsec)' },
       { title: 'V<sub>JPL</sub> (mag)' },
       { title: 'r<sub>h</sub> (au)' },
       { title: '&Delta; (au)' },
       { title: 'Phase (deg)' },
-      { title: 'f (deg)' },
       { title: 'T-T<sub>P</sub> (days)' },
       { title: 'Images' },
     ]
@@ -185,13 +243,20 @@ function obsByTarget(data) {
       { title: 'Target' },
       { title: 'Date (UT)' },
       { title: 'Filter' },
+      {
+	title: 'RA (hr)',
+	'render': function(data) { return sexagesimal(data / 15, 1, 2).substring(1); }
+      },
+      {
+	title: 'Dec (deg)',
+	'render': function(data) { return sexagesimal(data, 0, 2); }
+      },
       { title: '&mu; (arcsec/hr)' },
       { title: 'Eph. 3&sigma; (arcsec)' },
       { title: 'V<sub>JPL</sub> (mag)' },
       { title: 'r<sub>h</sub> (au)' },
       { title: '&Delta; (au)' },
       { title: 'Phase (deg)' },
-      { title: 'f (deg)' },
       { title: 'T-T<sub>P</sub> (days)' },
       { title: 'Images' },
     ]
@@ -249,6 +314,9 @@ $(document).ready(function() {
     $('#z-pointing-section').show();
     $('#z-lightcurve-section').hide();
     $('#z-summary-loading-indicator').addClass('loading');
-    setup().then(() => query('status')).then(data => status(data));  
+    setup()
+      .then(() => query('status'))
+      .then(data => status(data))
+      .then(data => obsByDate(data));
   }
 });
