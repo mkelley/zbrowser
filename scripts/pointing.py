@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 from astropy.time import Time
 import astropy.units as u
 from zchecker import ZChecker
+from sbsearch.util import fov2points
 
 parser = argparse.ArgumentParser(
     description='Plot ZTF pointing and found targets.')
@@ -17,13 +18,16 @@ parser.add_argument('--frame', default='equatorial',
 args = parser.parse_args()
 
 
-def rows2lonlat(rows, frame):
+def rows2lonlat(rows, frame, fov=False):
     from astropy.coordinates import Angle, SkyCoord
 
     if len(rows) == 0:
         return [], []
     else:
-        ra, dec = [list(x) for x in zip(*rows)]
+        if fov:
+            ra, dec = np.array([fov2points(fov)[:2] for fov in rows]).T
+        else:
+            ra, dec = np.array([list(row) for row in rows]).T
 
     c = SkyCoord(ra=ra, dec=dec, unit='deg')
     if frame == 'equatorial':
@@ -44,7 +48,7 @@ def rows2lonlat(rows, frame):
 with ZChecker() as z:
     if args.date is None:
         date = z.db.execute(
-            'SELECT date FROM nights ORDER BY date DESC LIMIT 1'
+            'SELECT date FROM ztf_nights ORDER BY date DESC LIMIT 1'
         ).fetchone()[0]
         t = Time(date)
     else:
@@ -54,24 +58,28 @@ with ZChecker() as z:
     jd = t.jd
 
     rows = z.db.execute('''
-    SELECT ra,dec FROM obs
-    WHERE nightid IN (SELECT nightid FROM nights WHERE date=?)
+    SELECT fov FROM ztf
+    INNER JOIN obs USING (obsid)
+    INNER JOIN ztf_nights USING(nightid)
+    WHERE date=?
     GROUP BY expid
     ''', [date]).fetchall()
 
-    exp = rows2lonlat(rows, args.frame)
+    exp = rows2lonlat(rows, args.frame, fov=True)
 
     rows = z.db.execute('''
-    SELECT ra,dec FROM foundobs
-    WHERE nightid IN (SELECT nightid FROM nights WHERE date=?)
+    SELECT ra,dec FROM ztf_found
+    INNER JOIN ztf_nights USING(nightid)
+    WHERE date=?
     ''', [date]).fetchall()
 
     found = rows2lonlat(rows, args.frame)
 
     rows = z.db.execute('''
-    SELECT AVG(ra),AVG(dec) FROM (
-        select *,CAST(ROUND(jd, 0) as INTEGER) AS nearest_day FROM eph
-    ) WHERE nearest_day=? AND vmag < 22 GROUP BY desg
+    SELECT AVG(ra),AVG(dec) FROM eph
+    WHERE CAST(ROUND(jd, 0) as INTEGER)=?
+      AND vmag < 23
+    GROUP BY objid
     ''', [int(round(jd))]).fetchall()
 
     targets = rows2lonlat(rows, args.frame)
