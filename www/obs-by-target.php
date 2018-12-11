@@ -25,7 +25,6 @@ if (array_key_exists('target', $query)) {
 
 if ($objid) {
     $data['valid'] = true;
-    $data['target'] = $target;
     $data['objid'] = $objid;
     $data['table'] = array();
     $data['stacks'] = array();
@@ -79,6 +78,7 @@ if ($objid) {
          FROM ztf_found
          LEFT JOIN ztf_stacks USING (stackid)
          WHERE objid=:objid
+           AND stackfile NOT NULL
          GROUP BY stackid
          ORDER BY obsdate'
     );

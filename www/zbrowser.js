@@ -161,7 +161,7 @@ function obsByDate(data) {
       let maglimit = data['stacks'][i][3];      
       let rh = data['stacks'][i][4];
 
-      let img = 'img/stacks/' + stack.replace('.fits.gz', '.png')
+      let img = 'img/stacks/' + stack.replace('.fits', '.png')
       let title = '<a href="?obs-by-target=' + desg + '">' + desg +
 	'</a> (' + filter + ', ' + rh + ' au, maglimit=' + maglimit + ')';
       stacks.append(card(12, title, img));
@@ -228,7 +228,7 @@ function obsByTarget(data) {
       let rh = data['stacks'][i][2];
       let title = date + ' (' + filter + ', ' + rh + ' au, maglimit='
 	  + maglimit + ')';
-      let img = 'img/stacks/' + stack.replace('.fits.gz', '.png')
+      let img = 'img/stacks/' + stack.replace('.fits', '.png')
       stacks.append(card(12, title, img));
     }
   } else {
@@ -270,6 +270,7 @@ function emptyTable(id) {
 }
 
 $(document).ready(function() {
+/*
   $('#z-obs-by-target-form').submit(function(e) {
     e.preventDefault();
     //emptyTable('#z-obs-table');
@@ -277,35 +278,39 @@ $(document).ready(function() {
     query('obs-by-target', $('#z-target-input').val())
       .then(data => obsByTarget(data));
   });
-
   $('#z-obs-by-date-form').submit(function(e) {
     e.preventDefault();
     emptyTable('#z-obs-table');
     $('#z-obs-by-date-loading-indicator').addClass('loading');
     query('obs-by-date', $('#z-date-input').val())
       .then(data => obsByDate(data));
-  });
+  });*/
 
   let url = new URL(window.location.href);
   if (url.searchParams.get('obs-by-target') !== null) {
     // observations by target
-    //emptyTable('#z-obs-table');
     $('#z-pointing-section').hide();
-    $('#z-ligthcurve-section').show();
+    $('#z-lightcurve-section').show();
     if (url.searchParams.get('obs-by-target') != "") {
-      $('#z-target-input').val(url.searchParams.get('obs-by-target'));
-      setup().then(() => $('#z-obs-by-target-form').submit());
+      let target = url.searchParams.get('obs-by-target');
+      $('#z-target-input').val(target);
+      setup()
+	.then(() => query('obs-by-target', target))
+	.then(data => obsByTarget(data));
     } else {
       setup();
     }
   } else if (url.searchParams.get('obs-by-date') !== null) {
     // observations by date
-    //emptyTable('#z-obs-table');
-    $('#z-pointing-section').hide();
-    $('#z-ligthcurve-section').show();
+    $('#z-pointing-section').show();
+    $('#z-lightcurve-section').hide();
     if (url.searchParams.get('obs-by-date') != "") {
-      $('#z-date-input').val(url.searchParams.get('obs-by-date'));
-      setup().then(() => $('#z-obs-by-date-form').submit());
+      let date = url.searchParams.get('obs-by-date');
+      $('#z-date-input').val(date);
+      $('#z-obs-by-date-loading-indicator').addClass('loading');
+      setup()
+	.then(() => query('obs-by-date', date))
+	.then(data => obsByDate(data));
     } else {
       setup();
     }

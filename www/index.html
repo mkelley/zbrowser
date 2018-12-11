@@ -43,14 +43,14 @@
 	  <div id="z-summary-loading-indicator"></div>
 	  <ul id="z-summary-list"></ul>
 
-	  <form id="z-obs-by-target-form">
-            <input type="text" list="targets" id="z-target-input">
+	  <form id="z-obs-by-target-form" method="get">
+            <input type="text" list="targets" id="z-target-input" name="obs-by-target">
             <input type="submit" value="Search by target">
             <div id="z-obs-by-target-loading-indicator"></div>
           </form>
 
-	  <form id="z-obs-by-date-form" style="margin-top: 1ex">
-            <input type="date" min="2017-10-15" max="2025-12-31" id="z-date-input">
+	  <form id="z-obs-by-date-form" method="get" style="margin-top: 1ex">
+            <input type="date" min="2017-10-15" max="2025-12-31" id="z-date-input" name="obs-by-date">
             <input type="submit" value="Search by date">
             <div id="z-obs-by-date-loading-indicator"></div>
           </form>

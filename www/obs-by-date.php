@@ -91,6 +91,7 @@ if ($nightId) {
          FROM ztf_found
          LEFT JOIN ztf_stacks USING (stackid)
          WHERE nightid=:nightid
+           AND stackfile NOT NULL
          GROUP BY stackid ORDER BY desg+0,desg'
     );
     $statement->bindValue(':nightid', $nightId, SQLITE3_INTEGER);
