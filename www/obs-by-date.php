@@ -4,7 +4,7 @@ header('Cache-Control:no-cache');
 # query fields
 #   target
 parse_str($_SERVER['QUERY_STRING'], $query);
-$db = new SQLite3('/n/oort1/ZTF/zchecker.db', SQLITE3_OPEN_READONLY);
+$db = new SQLite3('/n/oort1/ZTF/zbrowser.db', SQLITE3_OPEN_READONLY);
 
 $data = array();
 $data['valid'] = false;
@@ -42,13 +42,7 @@ if ($nightId) {
     $data['stacks'] = array();
 
     $statement = $db->prepare(
-        'SELECT desg,obsdate,ra,dec,dra,ddec,ra3sig,dec3sig,
-                vmag,rh,rdot,delta,phase,trueanomaly,tmtp,
-                filtercode,filefracday,field,ccdid,qid
-         FROM ztf_found
-         INNER JOIN obj USING (objid)
-         WHERE nightid=:nightid
-         ORDER BY desg+0,desg'
+        'SELECT * FROM ztf_found WHERE nightid=:nightid ORDER BY desg+0,desg'
     );
     $statement->bindValue(':nightid', $nightId, SQLITE3_INTEGER);
     $result = $statement->execute();
@@ -92,11 +86,10 @@ if ($nightId) {
     }
 
     $statement = $db->prepare(
-        'SELECT stackfile,desg,filtercode,ROUND(MAX(maglimit),1),ROUND(AVG(rh),3)
-         FROM ztf_stacks
-         INNER JOIN ztf_cutouts USING (stackid)
-         INNER JOIN ztf_found USING (foundid)
-         INNER JOIN obj USING (objid)
+        'SELECT stackfile,desg,filtercode,
+           ROUND(MAX(maglimit),1),ROUND(AVG(rh),3)
+         FROM ztf_found
+         LEFT JOIN ztf_stacks USING (stackid)
          WHERE nightid=:nightid
          GROUP BY stackid ORDER BY desg+0,desg'
     );

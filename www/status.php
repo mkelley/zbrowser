@@ -1,6 +1,6 @@
 <?php
 header('Cache-Control:no-cache');
-$db = new SQLite3('/n/oort1/ZTF/zchecker.db', SQLITE3_OPEN_READONLY);
+$db = new SQLite3('/n/oort1/ZTF/zbrowser.db', SQLITE3_OPEN_READONLY);
 $data = array();
 
 $data['nights'] = $db->querySingle(
@@ -8,8 +8,9 @@ $data['nights'] = $db->querySingle(
 $data['nights with data'] = $db->querySingle(
     'SELECT COUNT() FROM ztf_nights WHERE exposures != 0');
 
-$row = $db->querySingle(
-    'SELECT nightid,date FROM ztf_nights ORDER BY date DESC LIMIT 1');
+$row = $db->query(
+    'SELECT nightid,date FROM ztf_nights ORDER BY date DESC LIMIT 1')
+     ->fetchArray();
 $lastNightId = $row[0];
 $data['most recent night checked'] = $row[1];
 
