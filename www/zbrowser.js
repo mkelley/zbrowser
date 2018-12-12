@@ -97,7 +97,7 @@ function setup() {
 }
 
 function card(size, title, img) {
-  return $('<div class="col-sm-' + size + '">').append(
+  return $('<div class="col-sm-12 col-lg-' + size + '">').append(
     $('<div class="card">').append(
       $('<h5 class="card-header">').append(title),
       $('<a href="' + img + '">').append(
@@ -164,7 +164,7 @@ function obsByDate(data) {
       let img = 'img/stacks/' + stack.replace('.fits', '.png')
       let title = '<a href="?obs-by-target=' + desg + '">' + desg +
 	'</a> (' + filter + ', ' + rh + ' au, maglimit=' + maglimit + ')';
-      stacks.append(card(12, title, img));
+      stacks.append(card(8, title, img));
     }
   } else {
     tableData = [];
@@ -229,7 +229,7 @@ function obsByTarget(data) {
       let title = date + ' (' + filter + ', ' + rh + ' au, maglimit='
 	  + maglimit + ')';
       let img = 'img/stacks/' + stack.replace('.fits', '.png')
-      stacks.append(card(12, title, img));
+      stacks.append(card(8, title, img));
     }
   } else {
     tableData = [];
