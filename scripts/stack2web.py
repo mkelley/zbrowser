@@ -6,7 +6,8 @@ from sbsearch.util import iterate_over
 ########################################################################
 
 
-def stacks_by_date(z, date):
+def stacks_by_date(z, date, restack=False):
+    stack_constraint = 'NOT NULL' if restack else 'IS NULL'
     rows = iterate_over(z.db.execute('''
     SELECT stackfile FROM ztf_stacks
     LEFT JOIN ztf_cutouts USING (stackid)
@@ -14,30 +15,32 @@ def stacks_by_date(z, date):
     LEFT JOIN ztf USING (obsid)
     LEFT JOIN ztf_nights USING (nightid)
     WHERE date=?
-      AND stackfile NOT NULL
-    ''', [date]))
+      AND stackfile {}
+    '''.format(stack_constraint), [date]))
     return rows
 
 ########################################################################
 
 
-def stacks_by_desg(z, desg):
+def stacks_by_desg(z, desg, restack=False):
+    stack_constraint = 'NOT NULL' if restack else 'IS NULL'
     rows = iterate_over(z.db.execute('''
     SELECT DISTINCT stackfile FROM ztf_stacks
     LEFT JOIN ztf_cutouts USING (stackid)
     LEFT JOIN found USING (foundid)
     LEFT JOIN obj USING (objid)
     WHERE desg=?
-      AND stackfile NOT NULL
-    ''', [desg]))
+      AND stackfile {}
+    '''.format(stack_constraint), [desg]))
     return rows
 
 
-def all_stacks(z, force_update):
+def all_stacks(z, restack=False):
+    stack_constraint = 'NOT NULL' if restack else 'IS NULL'
     rows = iterate_over(z.db.execute('''
     SELECT stackfile,stackdate FROM ztf_stacks
-    WHERE stackfile NOT NULL
-    '''))
+    WHERE stackfile {}
+    '''.format(stack_constraint)))
     return rows
 
 ########################################################################
@@ -102,7 +105,7 @@ def plot(inf, outf):
             axes[i].plot(x[2:][::-1], x[:2], color='0.75')
 
     plt.setp(axes, frame_on=False, xticks=[], yticks=[])
-    fig.savefig(outf, dpi=100)
+    fig.savefig(outf, dpi=200)
     plt.close()
 
 ########################################################################
@@ -170,12 +173,14 @@ if __name__ == '__main__':
     with ZChecker(config) as z:
         path = z.config['stack path']
         if args.desg is not None:
-            stacks = [stacks_by_desg(z, desg) for desg in args.desg.split(',')]
+            stacks = [stacks_by_desg(z, desg, restack=args.force)
+                      for desg in args.desg.split(',')]
         elif args.full_update:
-            stacks = [all_stacks(z, args.force)]
+            stacks = [all_stacks(z, restack=args.force)]
         else:
-            stacks = [stacks_by_date(z, args.date)]
+            stacks = [stacks_by_date(z, args.date, restack=args.force)]
 
+        count = 0
         for i in range(len(stacks)):
             for row in stacks[i]:
                 stack = row[0]
@@ -198,4 +203,7 @@ if __name__ == '__main__':
                         continue
 
                 plot(inf, outf)
+                count += 1
                 z.logger.debug('{}'.format(basename))
+
+    z.logger.debug('{} stacks updated.'.format(count))
