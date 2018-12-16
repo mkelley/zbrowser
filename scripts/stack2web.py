@@ -6,8 +6,7 @@ from sbsearch.util import iterate_over
 ########################################################################
 
 
-def stacks_by_date(z, date, restack=False):
-    stack_constraint = 'NOT NULL' if restack else 'IS NULL'
+def stacks_by_date(z, date):
     rows = iterate_over(z.db.execute('''
     SELECT stackfile FROM ztf_stacks
     LEFT JOIN ztf_cutouts USING (stackid)
@@ -15,32 +14,30 @@ def stacks_by_date(z, date, restack=False):
     LEFT JOIN ztf USING (obsid)
     LEFT JOIN ztf_nights USING (nightid)
     WHERE date=?
-      AND stackfile {}
-    '''.format(stack_constraint), [date]))
+      AND stackfile NOT NULL
+    ''', [date]))
     return rows
 
 ########################################################################
 
 
-def stacks_by_desg(z, desg, restack=False):
-    stack_constraint = 'NOT NULL' if restack else 'IS NULL'
+def stacks_by_desg(z, desg):
     rows = iterate_over(z.db.execute('''
     SELECT DISTINCT stackfile FROM ztf_stacks
     LEFT JOIN ztf_cutouts USING (stackid)
     LEFT JOIN found USING (foundid)
     LEFT JOIN obj USING (objid)
     WHERE desg=?
-      AND stackfile {}
-    '''.format(stack_constraint), [desg]))
+      AND stackfile NOT NULL
+    ''', [desg]))
     return rows
 
 
-def all_stacks(z, restack=False):
-    stack_constraint = 'NOT NULL' if restack else 'IS NULL'
+def all_stacks(z):
     rows = iterate_over(z.db.execute('''
     SELECT stackfile,stackdate FROM ztf_stacks
-    WHERE stackfile {}
-    '''.format(stack_constraint)))
+    WHERE stackfile NOT NULL
+    '''))
     return rows
 
 ########################################################################
@@ -173,12 +170,12 @@ if __name__ == '__main__':
     with ZChecker(config) as z:
         path = z.config['stack path']
         if args.desg is not None:
-            stacks = [stacks_by_desg(z, desg, restack=args.force)
+            stacks = [stacks_by_desg(z, desg)
                       for desg in args.desg.split(',')]
         elif args.full_update:
-            stacks = [all_stacks(z, restack=args.force)]
+            stacks = [all_stacks(z)]
         else:
-            stacks = [stacks_by_date(z, args.date, restack=args.force)]
+            stacks = [stacks_by_date(z, args.date)]
 
         count = 0
         for i in range(len(stacks)):
