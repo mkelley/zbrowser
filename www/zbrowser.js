@@ -158,7 +158,7 @@ function obsByDate(data) {
       let stack = data['stacks'][i][0];
       let desg = data['stacks'][i][1];
       let filter = data['stacks'][i][2];
-      let maglimit = data['stacks'][i][3];      
+      let maglimit = data['stacks'][i][3];
       let rh = data['stacks'][i][4];
 
       let img = 'img/stacks/' + stack.replace('.fits', '.png')
@@ -223,9 +223,9 @@ function obsByTarget(data) {
       let stack = data['stacks'][i][0];
       let date = stack.split('-')[1];
       date = [date.slice(0, 4), date.slice(4, 6), date.slice(6, 8)].join('-');
-      let filter = stack.split('-')[3];
-      let maglimit = data['stacks'][i][1];
-      let rh = data['stacks'][i][2];
+      let filter = data['stacks'][i][1];
+      let maglimit = data['stacks'][i][2];
+      let rh = data['stacks'][i][3];
       let title = date + ' (' + filter + ', ' + rh + ' au, maglimit='
 	  + maglimit + ')';
       let img = 'img/stacks/' + stack.replace('.fits', '.png')

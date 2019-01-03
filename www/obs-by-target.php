@@ -80,7 +80,7 @@ if ($objid) {
          WHERE objid=:objid
            AND stackfile NOT NULL
          GROUP BY stackid
-         ORDER BY obsdate'
+         ORDER BY obsdate DESC'
     );
     $statement->bindValue(':objid', $objid, SQLITE3_INTEGER);
     if ($result = $statement->execute()) {
