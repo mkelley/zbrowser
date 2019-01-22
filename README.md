@@ -11,6 +11,7 @@ Setup
        * stacks/
 2. Copy www/* to site/ directory.
 3. Copy scripts/dump-foundobs.sql to your favorite location.  Edit the first two lines to use the correct paths.
+4. Also edit zbrowser/www/targets.php, zbrowser/www/status.php and zbrowser/www/obs-by-date.php to point to the correct path of zbrowser.db.
 
 Daily
 -----
