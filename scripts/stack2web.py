@@ -85,7 +85,7 @@ def plot(inf, outf):
             ref_baseline = blank
             ref_diff = blank
 
-        opts = dict(cmap=cmap, vmin=-2 * mms[2], vmax=10 * mms[2])
+        opts = dict(cmap=cmap, vmin=-2 * mms[2], vmax=10 * mms[2], origin='lower')
         axes[0].imshow(im, **opts)
         axes[1].imshow(baseline, **opts)
         axes[2].imshow(diff, **opts)
