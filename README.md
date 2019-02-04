@@ -22,11 +22,10 @@ export ZBSR=/path/to/zbrowser
 export ZDATA=/path/to/zchecker/output
 export ZWEB=/path/to/web/site
 (cd $ZDATA; sqlite3 < /path/to/dump-foundobs.sql)
-mv /tmp/foundobs.db ${ZWEB}/
 python3 ${ZBSR}/scripts/pointing.py --frame=equatorial ${ZWEB}/img/pointing
 python3 ${ZBSR}/scripts/pointing.py --frame=ecliptic ${ZWEB}/img/pointing
 python3 ${ZBSR}/scripts/pointing.py --frame=galactic ${ZWEB}/img/pointing
-python3 ${ZBSR}/scripts/stack2web.py ${ZWEB}/img/stack
+python3 ${ZBSR}/scripts/stack2web.py ${ZWEB}/img/stacks
 ```
 
 Occasionally
