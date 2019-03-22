@@ -145,10 +145,15 @@ function status(data) {
 function obsByDate(data) {
   $('#z-lightcurve-section').hide();
   $('#z-target-lightcurve').empty();
+  $('#z-lightcurves-section').show();
+  $('#z-stacks-section').show();
+
   let stacks = $('#z-stacks');
+  let lightcurves = $('#z-lightcurves');
   let targetTable = $('#z-obs-table');
 
   stacks.empty();
+  lightcurves.empty();
 
   let tableData;
   if (data['valid'] !== false) {
@@ -161,9 +166,21 @@ function obsByDate(data) {
       let maglimit = data['stacks'][i][3];
       let rh = data['stacks'][i][4];
 
-      let img = 'img/stacks/' + stack.replace('.fits', '.png')
+      // one lightcurve per target
+      let id = 'lc-' + desg.replace(/[ \/]/g, '');
+      if ($('#' + id).length === 0) {
+	let img = 'img/lightcurves/lc_'
+	  + desg.replace(/[ \/]/g, '_') + '.png';
+	let title = '<a href="?obs-by-target=' + desg + '">' + desg +
+	  '</a> (' + rh + ' au)';
+	let lcCard = card(4, title, img);
+	lcCard.attr('id', id);
+	lightcurves.append(lcCard);
+      }
+      
       let title = '<a href="?obs-by-target=' + desg + '">' + desg +
 	'</a> (' + filter + ', ' + rh + ' au, maglimit=' + maglimit + ')';
+      let img = 'img/stacks/' + stack.replace('.fits', '.png')
       stacks.append(card(8, title, img));
     }
   } else {
@@ -201,6 +218,7 @@ function obsByDate(data) {
 }
 
 function obsByTarget(data) {
+  $('#z-lightcurves').empty();
   let lightcurve = $('#z-target-lightcurve');
   let stacks = $('#z-stacks');
   let targetTable = $('#z-obs-table');
@@ -215,7 +233,7 @@ function obsByTarget(data) {
     lightcurve.append(
       card(
 	6, 'Lightcurve',
-	'img/lightcurves/lc_' + data['target'].replace(/[ \/]/g, '-')
+	'img/lightcurves/lc_' + data['target'].replace(/[ \/]/g, '_')
       )
     );
 
@@ -290,6 +308,7 @@ $(document).ready(function() {
   if (url.searchParams.get('obs-by-target') !== null) {
     // observations by target
     $('#z-pointing-section').hide();
+    $('#z-lightcurves-section').hide();
     $('#z-lightcurve-section').show();
     if (url.searchParams.get('obs-by-target') != "") {
       let target = url.searchParams.get('obs-by-target');
