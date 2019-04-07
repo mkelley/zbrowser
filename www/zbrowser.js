@@ -220,6 +220,7 @@ function obsByDate(data) {
 function obsByTarget(data) {
   $('#z-lightcurves').empty();
   let lightcurve = $('#z-target-lightcurve');
+  let lcTable = $('#z-lightcurve-table');
   let stacks = $('#z-stacks');
   let targetTable = $('#z-obs-table');
 
@@ -258,7 +259,6 @@ function obsByTarget(data) {
     data: tableData,
     order: [],
     columns: [
-      { title: 'Target' },
       { title: 'Date (UT)' },
       { title: 'Filter' },
       {
@@ -272,6 +272,9 @@ function obsByTarget(data) {
       { title: '&mu; (arcsec/hr)' },
       { title: 'Eph. 3&sigma; (arcsec)' },
       { title: 'V<sub>JPL</sub> (mag)' },
+      { title: 'm (mag)' },
+      { title: 'σ (mag)' },
+      { title: 'Flag' },
       { title: 'r<sub>h</sub> (au)' },
       { title: '&Delta; (au)' },
       { title: 'Phase (deg)' },

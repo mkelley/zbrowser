@@ -28,7 +28,25 @@ if ($objid) {
     $data['objid'] = $objid;
     $data['table'] = array();
     $data['stacks'] = array();
-    
+
+    $phot = array();
+    $fn = ("/n/oort1/ZTF/photometry/tables/log_"
+           . str_replace("/", '_', str_replace(" ", "_", $desg))
+           . ".csv");
+    if (($file = fopen($fn, "r")) !== false) {
+        while (($row = fgetcsv($file, 1000, ",")) !== false) {
+            if ($row[0] == "Filename")
+                continue;
+
+            $foundid = (int) $row[1];
+            // 5, 10, and 1e4 km radii
+            $phot[$foundid] = array((float) $row[20], (float) $row[23], 
+                                    (float) $row[21], (float) $row[24],
+                                    (float) $row[22], (float) $row[25],
+                                    (int) $row[27]);
+        }
+    }
+
     $statement = $db->prepare(
         'SELECT * FROM ztf_found WHERE objid=:objid ORDER BY obsdate DESC'
     );
@@ -36,6 +54,8 @@ if ($objid) {
 
     if ($result = $statement->execute()) {
         while($row = $result->fetchArray()) {
+            $foundid = $row['foundid'];
+
             $rh = $row['rh'];
             if ($row['rdot'] < 0) {
                 $rh = -1 * $rh;
@@ -53,7 +73,6 @@ if ($objid) {
                 $row['qid']);
         
             array_push($data['table'], array(
-                str_replace(' ', '&nbsp;', $row['desg']),
                 str_replace(' ', '&nbsp;',
                             str_replace('-', '&#8209;',
                                         substr($row['obsdate'], 0, 16))),
@@ -63,6 +82,9 @@ if ($objid) {
                 round(hypot($row['dra'], $row['ddec']), 2),
                 round(hypot($row['ra3sig'], $row['dec3sig']), 2),
                 round($row['vmag'], 1),
+                round($phot[$foundid][4], 2),
+                round($phot[$foundid][5], 2),
+                $phot[$foundid][6],
                 round($rh, 3),
                 round($row['delta'], 3),
                 round($row['phase'], 1),
