@@ -107,6 +107,37 @@ function card(size, title, img) {
   );
 }
 
+function newCarousel(id) {
+  let carousel = $('<div id="carouselExampleControls" class="carousel slide" data-ride="carousel"></div>');
+  carousel.append($('<div class="carousel-inner"></div>'));
+
+  let prev = $('<a class="carousel-control-prev" href="#carouselExampleControls" role="button" data-slide="prev"></a>');
+  prev.append($('<span class="carousel-control-prev-icon" aria-hidden="true"></span>'));
+  prev.append($('<span class="sr-only">Previous</span>'));
+  carousel.append(prev);
+
+  let next = $('<a class="carousel-control-next" href="#carouselExampleControls" role="button" data-slide="next" data-interval="false"></a>');
+  next.append($('<span class="carousel-control-next-icon" aria-hidden="true"></span>'));
+  next.append($('<span class="sr-only">Next</span>'));
+  carousel.append(next);
+
+  return carousel;
+}
+
+function addToCarousel(carousel, caption, img, active=false) {
+  let inner = carousel.find('div.carousel-inner');
+  let item = $(
+    '<div class="carousel-item'
+      + (active ? ' active' : '')
+      + '"></div>');
+
+
+  item.append($('<h5>' + caption + '</h5>'));
+  item.append($('<img class="d-block w-100" src="' + img + '">'));
+  
+  inner.append(item);
+}
+
 function status(data) {
   let ul = $('#z-summary-list');
   let li = $('<li>').append('Nights in database: ' + data['nights']);
@@ -227,6 +258,9 @@ function obsByTarget(data) {
   stacks.empty();
   lightcurve.empty();
 
+  let carousel = newCarousel('z-stack-carousel');
+  stacks.append(carousel);
+
   let tableData;
   if (data['valid'] !== false) {
     tableData = data['table'];
@@ -248,7 +282,8 @@ function obsByTarget(data) {
       let title = date + ' (' + filter + ', ' + rh + ' au, maglimit='
 	  + maglimit + ')';
       let img = 'img/stacks/' + stack.replace('.fits', '.png')
-      stacks.append(card(8, title, img));
+      //stacks.append(card(8, title, img));
+      addToCarousel(carousel, title, img, i == 0);
     }
   } else {
     tableData = [];
