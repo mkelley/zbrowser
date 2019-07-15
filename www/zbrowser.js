@@ -258,8 +258,8 @@ function obsByTarget(data) {
   stacks.empty();
   lightcurve.empty();
 
-  let carousel = newCarousel('z-stack-carousel');
-  stacks.append(carousel);
+  //let carousel = newCarousel('z-stack-carousel');
+  //stacks.append(carousel);
 
   let tableData;
   if (data['valid'] !== false) {
@@ -282,8 +282,8 @@ function obsByTarget(data) {
       let title = date + ' (' + filter + ', ' + rh + ' au, maglimit='
 	  + maglimit + ')';
       let img = 'img/stacks/' + stack.replace('.fits', '.png')
-      //stacks.append(card(8, title, img));
-      addToCarousel(carousel, title, img, i == 0);
+      stacks.append(card(8, title, img));
+      //addToCarousel(carousel, title, img, i == 0);
     }
   } else {
     tableData = [];
