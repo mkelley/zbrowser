@@ -3,6 +3,7 @@ ATTACH DATABASE '/oort1/ZTF/zbrowser.db' AS zb;
 CREATE TABLE IF NOT EXISTS zb.ztf_found(
        foundid INTEGER PRIMARY KEY,
        objid INTEGER KEY,
+       obsid INTEGER KEY,
        desg TEXT,
        nightid INTEGER KEY,
        obsdate TEXT,
@@ -27,8 +28,9 @@ CREATE TABLE IF NOT EXISTS zb.ztf_found(
        maglimit FLOAT,
        stackid INTEGER KEY
 );
+CREATE UNIQUE INDEX IF NOT EXISTS zb.ztf_found_objid_obsid ON ztf_found(obsid,objid);
 INSERT OR IGNORE INTO zb.ztf_found
-SELECT foundid,objid,desg,nightid,obsdate,ra,dec,dra,ddec,ra3sig,dec3sig,
+SELECT foundid,objid,obsid,desg,nightid,obsdate,ra,dec,dra,ddec,ra3sig,dec3sig,
   vmag,rh,rdot,delta,phase,trueanomaly,tmtp,filtercode,filefracday,field,
   ccdid,qid,maglimit,stackid
 FROM ztf_found

@@ -108,7 +108,7 @@ function card(size, title, img) {
 }
 
 function newCarousel(id) {
-  let carousel = $('<div id="carouselExampleControls" class="carousel slide" data-ride="carousel"></div>');
+  let carousel = $('<div id="carouselExampleControls" class="carousel slide col-sm-12 col-lg-8" style="margin-bottom: 5em;" data-ride="carousel"></div>');
   carousel.append($('<div class="carousel-inner"></div>'));
 
   let prev = $('<a class="carousel-control-prev" href="#carouselExampleControls" role="button" data-slide="prev"></a>');
