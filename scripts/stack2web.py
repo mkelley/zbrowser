@@ -1,13 +1,12 @@
 import matplotlib
 matplotlib.use('agg')
 import numpy as np
-from sbsearch.util import iterate_over
 
 ########################################################################
 
 
 def stacks_by_date(z, date):
-    rows = iterate_over(z.db.execute('''
+    rows = z.db.iterate_over('''
     SELECT stackfile FROM ztf_stacks
     LEFT JOIN ztf_cutouts USING (stackid)
     LEFT JOIN found USING (foundid)
@@ -15,30 +14,29 @@ def stacks_by_date(z, date):
     LEFT JOIN ztf_nights USING (nightid)
     WHERE date=?
       AND stackfile NOT NULL
-    ''', [date]))
+    ''', [date])
     return rows
 
 ########################################################################
 
 
 def stacks_by_desg(z, desg):
-    rows = iterate_over(z.db.execute('''
+    rows = z.db.iterate_over('''
     SELECT DISTINCT stackfile FROM ztf_stacks
     LEFT JOIN ztf_cutouts USING (stackid)
     LEFT JOIN found USING (foundid)
     LEFT JOIN obj USING (objid)
     WHERE desg=?
       AND stackfile NOT NULL
-    ''', [desg]))
+    ''', [desg])
     return rows
 
 
 def all_stacks(z):
-    rows = iterate_over(z.db.execute('''
+    return z.db.iterate_over('''
     SELECT stackfile,stackdate FROM ztf_stacks
     WHERE stackfile NOT NULL
-    '''))
-    return rows
+    ''', [])
 
 ########################################################################
 
@@ -191,10 +189,11 @@ if __name__ == '__main__':
                         pass
                     elif args.full_update:
                         stack_time = str(row[1])
-                        plot_time = datetime.fromtimestamp(
-                            os.path.getmtime(outf)).isoformat().replace('T', ' ')
+                        plot_time = datetime.utcfromtimestamp(
+                            os.path.getmtime(outf)).isoformat(' ')
                         if plot_time > stack_time:
                             continue
+                        print(plot_time, stack_time)
                     else:
                         z.logger.debug('{} already exists'.format(basename))
                         continue
