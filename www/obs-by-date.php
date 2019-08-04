@@ -115,7 +115,8 @@ if ($nightId) {
 
     $statement = $db->prepare(
         'SELECT stackfile,desg,filtercode,
-           ROUND(MAX(maglimit),1),ROUND(AVG(rh),3)
+           ROUND(MAX(maglimit),1),ROUND(AVG(rh),3),
+           ROUND(AVG(tmtp), 2)
          FROM ztf_found
          LEFT JOIN ztf_stacks USING (stackid)
          WHERE nightid=:nightid
