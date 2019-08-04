@@ -26,17 +26,28 @@ CREATE TABLE IF NOT EXISTS zb.ztf_found(
        ccdid INTEGER,
        qid INTEGER,
        maglimit FLOAT,
-       stackid INTEGER KEY
+       stackid INTEGER KEY,
+       dx FLOAT,
+       dy FLOAT,
+       bgap INTEGER,
+       bg FLOAT,
+       bg_area INTEGER,
+       bg_stdev FLOAT,
+       flux BLOB,
+       m BLOB,
+       merr BLOB,
+       flag INTEGER
 );
 CREATE UNIQUE INDEX IF NOT EXISTS zb.ztf_found_objid_obsid ON ztf_found(obsid,objid);
 INSERT OR IGNORE INTO zb.ztf_found
 SELECT foundid,objid,obsid,desg,nightid,obsdate,ra,dec,dra,ddec,ra3sig,dec3sig,
   vmag,rh,rdot,delta,phase,trueanomaly,tmtp,filtercode,filefracday,field,
-  ccdid,qid,maglimit,stackid
+  ccdid,qid,maglimit,stackid,dx,dy,bgap,bg,bg_area,bg_stdev,flux,m,merr,flag
 FROM ztf_found
 LEFT JOIN ztf_cutouts USING (foundid)
 LEFT JOIN obj USING (objid)
-LEFT JOIN ztf_stacks USING (stackid);
+LEFT JOIN ztf_stacks USING (stackid)
+LEFT JOIN ztf_phot USING (foundid);
 
 
 CREATE TABLE IF NOT EXISTS zb.obj(objid INTEGER PRIMARY KEY, desg);

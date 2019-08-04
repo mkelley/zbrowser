@@ -21,7 +21,7 @@ $data['targets with coverage'] = $db->querySingle(
     'SELECT COUNT(DISTINCT objid) FROM ztf_found');
 
 $data['most recent targets'] = $db->querySingle(
-    "SELECT COUNT() FROM ztf_found WHERE nightid=".$lastNightId);
+    "SELECT COUNT(DISTINCT objid) FROM ztf_found WHERE nightid=".$lastNightId);
 
 echo(json_encode($data));
 ?>

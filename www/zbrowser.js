@@ -225,7 +225,6 @@ function obsByDate(data) {
     columns: [
       { title: 'Target' },
       { title: 'Date (UT)' },
-      { title: 'Filter' },
       {
 	title: 'RA (hr)',
 	'render': function(data) { return sexagesimal(data / 15, 1, 2).substring(1); }
@@ -235,13 +234,24 @@ function obsByDate(data) {
 	'render': function(data) { return sexagesimal(data, 0, 2); }
       },
       { title: '&mu; (arcsec/hr)' },
-      { title: 'Eph. 3&sigma; (arcsec)' },
-      { title: 'V<sub>JPL</sub> (mag)' },
       { title: 'r<sub>h</sub> (au)' },
       { title: '&Delta; (au)' },
       { title: 'Phase (deg)' },
       { title: 'T-T<sub>P</sub> (days)' },
       { title: 'Images' },
+      { title: 'Eph. 3&sigma; (arcsec)' },
+      { title: 'Cen. offset (arcsec)' },
+      { title: 'V<sub>JPL</sub> (mag)' },
+      { title: 'Filter' },
+      {
+	title: 'm (mag)',
+	'render': function(data) { return (Object.keys(data).length ? data[3] : ''); }
+      },
+      {
+	title: 'σ<sub>m</sub> (mag)',
+	'render': function(data) { return (Object.keys(data).length ? data[3] : ''); }
+      },
+      { title: 'Flag' }
     ]
   });
 
@@ -295,7 +305,6 @@ function obsByTarget(data) {
     order: [],
     columns: [
       { title: 'Date (UT)' },
-      { title: 'Filter' },
       {
 	title: 'RA (hr)',
 	'render': function(data) { return sexagesimal(data / 15, 1, 2).substring(1); }
@@ -305,16 +314,24 @@ function obsByTarget(data) {
 	'render': function(data) { return sexagesimal(data, 0, 2); }
       },
       { title: '&mu; (arcsec/hr)' },
-      { title: 'Eph. 3&sigma; (arcsec)' },
-      { title: 'V<sub>JPL</sub> (mag)' },
-      { title: 'm (mag)' },
-      { title: 'σ (mag)' },
-      { title: 'Flag' },
       { title: 'r<sub>h</sub> (au)' },
       { title: '&Delta; (au)' },
       { title: 'Phase (deg)' },
       { title: 'T-T<sub>P</sub> (days)' },
       { title: 'Images' },
+      { title: 'Eph. 3&sigma; (arcsec)' },
+      { title: 'Cen. offset (arcsec)' },
+      { title: 'V<sub>JPL</sub> (mag)' },
+      { title: 'Filter' },
+      {
+	title: 'm (mag)',
+	'render': function(data) { return (Object.keys(data).length ? data[3] : ''); }
+      },
+      {
+	title: 'σ<sub>m</sub> (mag)',
+	'render': function(data) { return (Object.keys(data).length ? data[3] : ''); }
+      },
+      { title: 'Flag' }
     ]
   });
 

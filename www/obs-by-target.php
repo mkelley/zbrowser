@@ -29,28 +29,16 @@ if ($objid) {
     $data['table'] = array();
     $data['stacks'] = array();
 
-    $phot = array();
-    $fn = ("/n/oort1/ZTF/photometry/tables/log_"
-           . str_replace("/", '_', str_replace(" ", "_", $desg))
-           . ".csv");
-    if (($file = fopen($fn, "r")) !== false) {
-        while (($row = fgetcsv($file, 1000, ",")) !== false) {
-            if ($row[0] == "Filename")
-                continue;
-
-            $foundid = (int) $row[1];
-            // 5, 10, and 1e4 km radii
-            $phot[$foundid] = array((float) $row[20], (float) $row[23], 
-                                    (float) $row[21], (float) $row[24],
-                                    (float) $row[22], (float) $row[25],
-                                    (int) $row[27]);
-        }
-    }
-
     $statement = $db->prepare(
         'SELECT * FROM ztf_found WHERE objid=:objid ORDER BY obsdate DESC'
     );
     $statement->bindValue(':objid', $objid, SQLITE3_INTEGER);
+
+    # hard coded apertures for zchecker 2.4.3
+    # 18 by pixel, 5 by projected size
+    $apertures = array(
+        2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+        10000, 20000, 30000, 40000, 50000);
 
     if ($result = $statement->execute()) {
         while($row = $result->fetchArray()) {
@@ -71,26 +59,42 @@ if ($objid) {
                 $row['filtercode'],
                 $row['ccdid'],
                 $row['qid']);
-        
+
+            if (is_null($row['m'])) {
+                $m = array();
+                $merr = array();
+            } else {
+                $phots = array_map(null, $apertures, unpack('f23', $row['m']),
+                                   unpack('f23', $row['merr']));
+                $m = array();
+                $merr = array();
+                foreach ($phots as &$phot) {
+                    $m[$phot[0]] = round($phot[1], 2);
+                    $merr[$phot[0]] = round($phot[2], 2);
+                }
+                unset($phot);
+            }
+
             array_push($data['table'], array(
                 str_replace(' ', '&nbsp;',
                             str_replace('-', '&#8209;',
                                         substr($row['obsdate'], 0, 16))),
-                $row['filtercode'],
                 $row['ra'],
                 $row['dec'],
                 round(hypot($row['dra'], $row['ddec']), 2),
-                round(hypot($row['ra3sig'], $row['dec3sig']), 2),
-                round($row['vmag'], 1),
-                round($phot[$foundid][4], 2),
-                round($phot[$foundid][5], 2),
-                $phot[$foundid][6],
                 round($rh, 3),
                 round($row['delta'], 3),
                 round($row['phase'], 1),
                 round($row['tmtp'], 1),
                 '<a href="' . $url . 'sciimg.fits">sci</a> <a href="'
-                . $url . 'scimrefdiffimg.fits.fz">diff</a>'
+                . $url . 'scimrefdiffimg.fits.fz">diff</a>',
+                round(hypot($row['ra3sig'], $row['dec3sig']), 2),
+                round(hypot($row['dx'], $row['dy']), 1),
+                round($row['vmag'], 1),
+                $row['filtercode'],
+                $m,
+                $merr,
+                $row['flag']
             ));
         }
     }
