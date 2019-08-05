@@ -61,17 +61,18 @@ if ($objid) {
             }
 
             array_push($data['table'], array(
-                round($rh, 3),
-                round($row['delta'], 3),
-                round($row['phase'], 1),
-                round($row['tmtp'], 1),
-                round(hypot($row['ra3sig'], $row['dec3sig']), 2),
-                round(hypot($row['dx'], $row['dy']), 1),
-                round($row['vmag'], 1),
-                $row['filtercode'],
-                $m,
-                $merr,
-                $row['flag']
+                "obsdate" => $row['obsdate'],
+                "rh" => round($rh, 3),
+                "delta" => round($row['delta'], 3),
+                "phase" => round($row['phase'], 1),
+                "tmtp" => round($row['tmtp'], 1),
+                "ephUnc" => round(hypot($row['ra3sig'], $row['dec3sig']), 2),
+                "cenOffset" => round(hypot($row['dx'], $row['dy']), 1),
+                "V" => round($row['vmag'], 1),
+                "filter" => $row['filtercode'],
+                "m" => $m,
+                "merr" => $merr,
+                "flag" => $row['flag']
             ));
         }
     }

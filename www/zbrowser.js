@@ -98,13 +98,21 @@ function setup() {
   );
 }
 
-function card(size, title, img) {
+function imageCard(size, title, img) {
   return $('<div class="col-sm-12 col-lg-' + size + '">').append(
     $('<div class="card">').append(
       $('<h5 class="card-header">').append(title),
       $('<a href="' + img + '">').append(
 	$('<img class="card-img-top" src="' + img + '">')
       )
+    )
+  );
+}
+
+function lightcurveCard(size, title, lc) {
+  return $('<div class="col-sm-12 col-lg-' + size + '">').append(
+    $('<div class="card">').append(
+      $('<h5 class="card-header">').append(title), $(lc)
     )
   );
 }
@@ -163,7 +171,7 @@ function status(data) {
     'Galactic': 'gal'
   }
   for (var frame in frames) {
-    pointing.append(card(
+    pointing.append(imageCard(
       4, frame,
       'img/pointing/' + data['most recent night checked'] + '-'
 	+ frames[frame]	+ '.png'
@@ -201,22 +209,22 @@ function obsByDate(data) {
       let tmtp = data['stacks'][i][5];
 
       // one lightcurve per target
-      let id = 'lc-' + desg.replace(/[ \/]/g, '');
+      let id = 'z-lightcuves-' + desg.replace(/[ \/]/g, '');
       if ($('#' + id).length === 0) {
-	let img = 'img/lightcurves/lc_'
-	  + desg.replace(/[ \/]/g, '_') + '.png';
+	let plot = '<div id="' + id + '-plot"></div>';
 	let title = '<a href="?obs-by-target=' + desg + '">' + desg +
 	  '</a> (' + rh + ' au)';
-	let lcCard = card(4, title, img);
+	let lcCard = lightcurveCard(4, title, plot);
 	lcCard.attr('id', id);
 	lightcurves.append(lcCard);
+//	  .then(data => photByTarget(data, lightcurveElements));
       }
       
       let title = '<a href="?obs-by-target=' + desg + '">' + desg +
 	'</a> (' + filter + ', ' + rh + ' au, T–Tp=' + tmtp + 
 	' maglimit=' + maglimit + ')';
       let img = 'img/stacks/' + stack.replace('.fits', '.png')
-      stacks.append(card(8, title, img));
+      stacks.append(imageCard(8, title, img));
     }
   } else {
     tableData = [];
@@ -248,7 +256,7 @@ function obsByDate(data) {
       { title: 'V<sub>JPL</sub> (mag)' },
       { title: 'Filter' },
       {
-	title: 'm (mag)',
+	title: 'm(5") (mag)',
 	'render': function(data) { return (Object.keys(data).length ? data[3] : ''); }
       },
       {
@@ -289,7 +297,7 @@ function obsByTarget(data) {
       let title = date + ' (' + filter + ', ' + rh + ' au, T–Tp='
 	+ tmtp + ' maglimit=' + maglimit + ')';
       let img = 'img/stacks/' + stack.replace('.fits', '.png')
-      stacks.append(card(8, title, img));
+      stacks.append(imageCard(8, title, img));
       //addToCarousel(carousel, title, img, i == 0);
     }
   } else {
@@ -321,12 +329,12 @@ function obsByTarget(data) {
       { title: 'V<sub>JPL</sub> (mag)' },
       { title: 'Filter' },
       {
-	title: 'm (mag)',
-	'render': function(data) { return (Object.keys(data).length ? data[3] : ''); }
+	title: 'm(5") (mag)',
+	'render': function(data) { return (Object.keys(data).length ? data["5"] : ''); }
       },
       {
 	title: 'σ<sub>m</sub> (mag)',
-	'render': function(data) { return (Object.keys(data).length ? data[3] : ''); }
+	'render': function(data) { return (Object.keys(data).length ? data["5"] : ''); }
       },
       { title: 'Flag' }
     ]
@@ -342,23 +350,44 @@ function whereFilterIs(name, filter) {
   };
 }
 
-function photByTarget(data) {
-  let lightcurve = $('#z-target-lightcurve');
+/* elements: see updatePhotometryPlot */
+function photByTarget(data, elements) {
+  let lightcurve = $(elements.lightcurve);
   lightcurve.empty();
 
   let layout = {
-    margin: { t: 0 },
-    yaxis: { autorange: "reversed" }
+    title: data['target'],
+    xaxis: {
+      title: "T–Tp (days)",
+    },
+    yaxis: {
+      title: "m (mag)",
+      autorange: "reversed"
+    }
   }
   Plotly.newPlot(lightcurve[0], [], layout);
 
   photometry = data;
-  updatePhotometryPlot();
+  updatePhotometryPlot(elements);
 }
 
-function updatePhotometryPlot() {
-  let lightcurve = $('#z-target-lightcurve');
-  let aperture = $('#z-target-lightcurve-aperture');
+/*
+  elements:
+    lightcurve (div)
+    aperture (select)
+    gmr (input [number])
+    rmi (input [number])
+
+    example colors g-r=0.56, r-i=0.17
+*/
+function updatePhotometryPlot(elements) {
+  let lightcurve = $(elements.lightcurve);
+  let aperture = $(elements.aperture);
+  let color = {
+    'zg': $(elements.gmr).val(),
+    'zr': 0,
+    'zi': -1 * $(elements.rmi).val()
+  };
 
   let traces = [];
   for (let i = 0; i < lightcurve[0].data.length; i += 1) {
@@ -370,49 +399,29 @@ function updatePhotometryPlot() {
     let i = aperture.val();
     let phot = photometry['table'];
     
-    let rh = [];
-    let delta = [];
-    let phase = [];
     let tmtp = [];
-    let ephUnc = [];
-    let cenOffset = [];
-    let V = [];
     let filter = [];
     let m = [];
     let merr = [];
-    let flag = [];
-
-    let color = {
-      'zg': 0.56,
-      'zr': 0.00,
-      'zi': -0.17
-    };
 
     for (let row of phot) {
-      if (row[8][i] == 0) {
+      if (row['m'][i] == 0) {
 	// some magnitudes are zero
 	continue;
       }
-      if (row[9][i] > 0.2) {
+      if (row['merr'][i] > 0.2) {
 	// some uncertainties are too big
 	continue;
       }
-      rh.push(row[0]);
-      delta.push(row[1]);
-      phase.push(row[2]);
-      tmtp.push(row[3]);
-      ephUnc.push(row[4]);
-      cenOffset.push(row[5]);
-      V.push(row[6]);
-      filter.push(row[7]);
-      m.push(row[8][i] - color[row[7]]);
-      merr.push(row[9][i]);
-      flag.push(row[10]);
+      tmtp.push(row['tmtp']);
+      filter.push(row['filter']);
+      m.push(row['m'][i] - color[row['filter']]);
+      merr.push(row['merr'][i]);
     }
 
     let zg = whereFilterIs('zg', filter);
     Plotly.addTraces(lightcurve[0], {
-      name: 'g-0.56',
+      name: 'g' + (color['zg']<0?"-":"+") + color['zg'],
       x: tmtp.filter(zg),
       y: m.filter(zg),
       error_y: {
@@ -440,7 +449,7 @@ function updatePhotometryPlot() {
 
     let zi = whereFilterIs('zi', filter);
     Plotly.addTraces(lightcurve[0], {
-      name: 'i+0.17',
+      name: 'i' + (color['zi']<0?"-":"+") + color['zi'],
       x: tmtp.filter(zi),
       y: m.filter(zi),
       error_y: {
@@ -475,6 +484,13 @@ $(document).ready(function() {
       .then(data => obsByDate(data));
   });*/
 
+  let lightcurveElements = {
+    lightcurve: '#z-target-lightcurve',
+    aperture: '#z-target-lightcurve-aperture',
+    gmr: '#z-target-lightcurve-gmr',
+    rmi: '#z-target-lightcurve-rmi'
+  };
+
   let url = new URL(window.location.href);
   if (url.searchParams.get('obs-by-target') !== null) {
     // observations by target
@@ -488,7 +504,7 @@ $(document).ready(function() {
 	.then(() => query('obs-by-target', target))
 	.then(data => obsByTarget(data))
 	.then(() => query('phot-by-target', target))
-	.then(data => photByTarget(data));
+	.then(data => photByTarget(data, lightcurveElements));
     } else {
       setup();
     }
@@ -517,7 +533,12 @@ $(document).ready(function() {
       .then(data => obsByDate(data));
   }
 
-  $('#z-target-lightcurve-aperture').change(updatePhotometryPlot);
+  $('#z-target-lightcurve-aperture').change(
+    () => updatePhotometryPlot(lightcurveElements));
+  $('#z-target-lightcurve-gmr').change(
+    () => updatePhotometryPlot(lightcurveElements));
+  $('#z-target-lightcurve-rmi').change(
+    () => updatePhotometryPlot(lightcurveElements));
 
 });
 
