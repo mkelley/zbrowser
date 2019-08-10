@@ -427,9 +427,14 @@ function updatePhotometryPlot(elements) {
       error_y: {
 	type: "data",
 	array: merr.filter(zg),
-	visible: true
+	visible: true,
+	color: 'gray'
       },
       mode: 'markers',
+      marker: {
+	color: 'green',
+	symbol: 'circle'
+      },
       type: 'scatter'
     });
 
@@ -441,9 +446,14 @@ function updatePhotometryPlot(elements) {
       error_y: {
 	type: "data",
 	array: merr.filter(zr),
-	visible: true
+	visible: true,
+	color: 'gray'
       },
       mode: 'markers',
+      marker: {
+	color: 'orange',
+	symbol: 'square'
+      },
       type: 'scatter'
     });
 
@@ -455,9 +465,14 @@ function updatePhotometryPlot(elements) {
       error_y: {
 	type: "data",
 	array: merr.filter(zi),
-	visible: true
+	visible: true,
+	color: 'gray'
       },
       mode: 'markers',
+      marker: {
+	color: 'red',
+	symbol: 'triangle-up'
+      },
       type: 'scatter'
     });
   }
