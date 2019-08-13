@@ -421,7 +421,7 @@ function updatePhotometryPlot(elements) {
 
     let zg = whereFilterIs('zg', filter);
     Plotly.addTraces(lightcurve[0], {
-      name: 'g' + (color['zg']<0?"-":"+") + color['zg'],
+      name: 'g' + (color['zg']<0?"+":"-") + Math.abs(color['zg']),
       x: tmtp.filter(zg),
       y: m.filter(zg),
       error_y: {
@@ -459,7 +459,7 @@ function updatePhotometryPlot(elements) {
 
     let zi = whereFilterIs('zi', filter);
     Plotly.addTraces(lightcurve[0], {
-      name: 'i' + (color['zi']<0?"-":"+") + color['zi'],
+      name: 'i' + (color['zi']<0?"+":"-") + Math.abs(color['zi']),
       x: tmtp.filter(zi),
       y: m.filter(zi),
       error_y: {
