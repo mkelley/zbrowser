@@ -99,7 +99,7 @@ function setup() {
 }
 
 function imageCard(size, title, img) {
-  return $('<div class="col-sm-12 col-lg-' + size + '">').append(
+  return $('<div class="col-sm-12 col-lg-' + size + ' mx-auto">').append(
     $('<div class="card">').append(
       $('<h5 class="card-header">').append(title),
       $('<a href="' + img + '">').append(
@@ -208,8 +208,17 @@ function obsByDate(data) {
       let rh = data['stacks'][i][4];
       let tmtp = data['stacks'][i][5];
 
+      /*
       // one lightcurve per target
       let id = 'z-lightcuves-' + desg.replace(/[ \/]/g, '');
+
+      let lightcurveElements = {
+	lightcurve: '#' + id + '-plot',
+	aperture: '#z-lightcurves-aperture',
+	gmr: '#z-lightcurves-gmr',
+	rmi: '#z-lightcurves-rmi'
+      };
+
       if ($('#' + id).length === 0) {
 	let plot = '<div id="' + id + '-plot"></div>';
 	let title = '<a href="?obs-by-target=' + desg + '">' + desg +
@@ -217,9 +226,10 @@ function obsByDate(data) {
 	let lcCard = lightcurveCard(4, title, plot);
 	lcCard.attr('id', id);
 	lightcurves.append(lcCard);
-//	  .then(data => photByTarget(data, lightcurveElements));
+	//query('phot-by-target', desg)
+	//  .then(data => photByTarget(data, lightcurveElements));
       }
-      
+      */
       let title = '<a href="?obs-by-target=' + desg + '">' + desg +
 	'</a> (' + filter + ', ' + rh + ' au, T–Tp=' + tmtp + 
 	' maglimit=' + maglimit + ')';
@@ -399,12 +409,19 @@ function updatePhotometryPlot(elements) {
     let i = aperture.val();
     let phot = photometry['table'];
     
-    let tmtp = [];
+    let jpl = {
+      v: [],
+      tmtp: []
+    };
     let filter = [];
     let m = [];
     let merr = [];
+    let tmtp = [];
 
     for (let row of phot) {
+      jpl.v.push(row['V']);
+      jpl.tmtp.push(row['tmtp']);
+
       if (row['m'][i] == 0) {
 	// some magnitudes are zero
 	continue;
@@ -418,6 +435,18 @@ function updatePhotometryPlot(elements) {
       m.push(row['m'][i] - color[row['filter']]);
       merr.push(row['merr'][i]);
     }
+
+    Plotly.addTraces(lightcurve[0], {
+      name: 'V(JPL)',
+      x: jpl.tmtp,
+      y: jpl.v,
+      mode: 'markers',
+      marker: {
+	color: 'black',
+	symbol: 'x'
+      },
+      type: 'scatter'
+    });
 
     let zg = whereFilterIs('zg', filter);
     Plotly.addTraces(lightcurve[0], {
