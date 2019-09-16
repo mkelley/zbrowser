@@ -104,7 +104,7 @@ if ($nightId) {
             '<a href="' . $url . 'sciimg.fits">sci</a> <a href="'
             . $url . 'scimrefdiffimg.fits.fz">diff</a>',
             round(hypot($row['ra3sig'], $row['dec3sig']), 2),
-            round(hypot($row['dx'], $row['dy']), 1),
+            round(hypot($row['dx'], $row['dy']), 2),
             round($row['vmag'], 1),
             $row['filtercode'],
             $m,

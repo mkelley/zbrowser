@@ -67,12 +67,13 @@ if ($objid) {
                 "phase" => round($row['phase'], 1),
                 "tmtp" => round($row['tmtp'], 1),
                 "ephUnc" => round(hypot($row['ra3sig'], $row['dec3sig']), 2),
-                "cenOffset" => round(hypot($row['dx'], $row['dy']), 1),
+                "cenOffset" => round(hypot($row['dx'], $row['dy']), 2),
                 "V" => round($row['vmag'], 1),
                 "filter" => $row['filtercode'],
                 "m" => $m,
                 "merr" => $merr,
-                "flag" => $row['flag']
+                "flag" => $row['flag'],
+                "infobits" => $row['infobits']
             ));
         }
     }

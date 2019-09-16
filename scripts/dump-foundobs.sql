@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS zb.ztf_found(
        phase FLOAT,
        trueanomaly FLOAT,
        tmtp FLOAT,
+       infobits INTEGER,
        filtercode TEXT,
        filefracday INTEGER,
        field INTEGER,
@@ -41,7 +42,7 @@ CREATE TABLE IF NOT EXISTS zb.ztf_found(
 CREATE UNIQUE INDEX IF NOT EXISTS zb.ztf_found_objid_obsid ON ztf_found(obsid,objid);
 INSERT OR IGNORE INTO zb.ztf_found
 SELECT foundid,objid,obsid,desg,nightid,obsdate,ra,dec,dra,ddec,ra3sig,dec3sig,
-  vmag,rh,rdot,delta,phase,trueanomaly,tmtp,filtercode,filefracday,field,
+  vmag,rh,rdot,delta,phase,trueanomaly,tmtp,infobits,filtercode,filefracday,field,
   ccdid,qid,maglimit,stackid,dx,dy,bgap,bg,bg_area,bg_stdev,flux,m,merr,flag
 FROM ztf_found
 LEFT JOIN ztf_cutouts USING (foundid)

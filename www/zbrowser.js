@@ -186,15 +186,12 @@ function status(data) {
 function obsByDate(data) {
   $('#z-lightcurve-section').hide();
   $('#z-target-lightcurve').empty();
-  $('#z-lightcurves-section').show();
   $('#z-stacks-section').show();
 
   let stacks = $('#z-stacks');
-  let lightcurves = $('#z-lightcurves');
   let targetTable = $('#z-obs-table');
 
   stacks.empty();
-  lightcurves.empty();
 
   let tableData;
   if (data['valid'] !== false) {
@@ -208,28 +205,6 @@ function obsByDate(data) {
       let rh = data['stacks'][i][4];
       let tmtp = data['stacks'][i][5];
 
-      /*
-      // one lightcurve per target
-      let id = 'z-lightcuves-' + desg.replace(/[ \/]/g, '');
-
-      let lightcurveElements = {
-	lightcurve: '#' + id + '-plot',
-	aperture: '#z-lightcurves-aperture',
-	gmr: '#z-lightcurves-gmr',
-	rmi: '#z-lightcurves-rmi'
-      };
-
-      if ($('#' + id).length === 0) {
-	let plot = '<div id="' + id + '-plot"></div>';
-	let title = '<a href="?obs-by-target=' + desg + '">' + desg +
-	  '</a> (' + rh + ' au)';
-	let lcCard = lightcurveCard(4, title, plot);
-	lcCard.attr('id', id);
-	lightcurves.append(lcCard);
-	//query('phot-by-target', desg)
-	//  .then(data => photByTarget(data, lightcurveElements));
-      }
-      */
       let title = '<a href="?obs-by-target=' + desg + '">' + desg +
 	'</a> (' + filter + ', ' + rh + ' au, T–Tp=' + tmtp + 
 	' maglimit=' + maglimit + ')';
@@ -281,7 +256,6 @@ function obsByDate(data) {
 }
 
 function obsByTarget(data) {
-  $('#z-lightcurves').empty();
   let lcTable = $('#z-lightcurve-table');
   let stacks = $('#z-stacks');
   let targetTable = $('#z-obs-table');
@@ -376,6 +350,7 @@ function photByTarget(data, elements) {
     }
   }
   Plotly.newPlot(lightcurve[0], [], layout);
+  lightcurve.append('<a href="phot-by-target?target=' + data['target'] + '">Download photometry</a>');
 
   photometry = data;
   updatePhotometryPlot(elements);
@@ -388,7 +363,12 @@ function photByTarget(data, elements) {
     gmr (input [number])
     rmi (input [number])
 
-    example colors g-r=0.56, r-i=0.17
+    example colors: g-r=0.56, r-i=0.17
+    Solontoi et al. (2010) median colors transformed to PS1 system:
+      g-r|SDSS = 0.57 ± 0.06
+      → g-r|P1 = 0.49 mag
+      r-i|SDSS = 0.24 ± 0.08
+      → r-i|P1 = 0.24 mag
 */
 function updatePhotometryPlot(elements) {
   let lightcurve = $(elements.lightcurve);
@@ -539,7 +519,6 @@ $(document).ready(function() {
   if (url.searchParams.get('obs-by-target') !== null) {
     // observations by target
     $('#z-pointing-section').hide();
-    $('#z-lightcurves-section').hide();
     $('#z-lightcurve-section').show();
     if (url.searchParams.get('obs-by-target') != "") {
       let target = url.searchParams.get('obs-by-target');
