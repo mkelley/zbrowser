@@ -242,11 +242,11 @@ function obsByDate(data) {
       { title: 'Filter' },
       {
 	title: 'm(5") (mag)',
-	'render': function(data) { return (Object.keys(data).length ? data[3] : ''); }
+	'render': (data) => (Object.keys(data).length ? data['5'] : '')
       },
       {
 	title: 'σ<sub>m</sub> (mag)',
-	'render': function(data) { return (Object.keys(data).length ? data[3] : ''); }
+	'render': (data) => (Object.keys(data).length ? data['5'] : '')
       },
       { title: 'Flag' }
     ]
@@ -287,8 +287,10 @@ function obsByTarget(data) {
   } else {
     tableData = [];
   }
-  
+
   targetTable.DataTable({
+    dom: 'Bfrtip',
+    buttons: ['csv'],
     destroy: true,
     data: tableData,
     order: [],
@@ -313,12 +315,16 @@ function obsByTarget(data) {
       { title: 'V<sub>JPL</sub> (mag)' },
       { title: 'Filter' },
       {
-	title: 'm(5") (mag)',
-	'render': function(data) { return (Object.keys(data).length ? data["5"] : ''); }
+	/* sync column index with aperturePicker */
+	title: 'm (mag)',
+	'render': (data) => (Object.keys(data).length ? data[
+	  $('#z-target-lightcurve-aperture').val()] : '')
       },
       {
+	/* sync column index with aperturePicker */
 	title: 'σ<sub>m</sub> (mag)',
-	'render': function(data) { return (Object.keys(data).length ? data["5"] : ''); }
+	'render': (data) => (Object.keys(data).length ? data[
+	  $('#z-target-lightcurve-aperture').val()] : '')
       },
       { title: 'Flag' }
     ]
@@ -334,9 +340,8 @@ function whereFilterIs(name, filter) {
   };
 }
 
-/* elements: see updatePhotometryPlot */
-function photByTarget(data, elements) {
-  let lightcurve = $(elements.lightcurve);
+function photByTarget(data) {
+  let lightcurve = $('#z-target-lightcurve');
   lightcurve.empty();
 
   let layout = {
@@ -350,19 +355,24 @@ function photByTarget(data, elements) {
     }
   }
   Plotly.newPlot(lightcurve[0], [], layout);
-  lightcurve.append('<a href="phot-by-target?target=' + data['target'] + '">Download photometry</a>');
+  lightcurve.append('<a href="phot-by-target?target=' + data['target'] + '">Download raw photometry</a>');
 
   photometry = data;
-  updatePhotometryPlot(elements);
+  updatePhotometry();
+}
+
+function updatePhotometry() {
+  updatePhotometryPlot();
+  updatePhotometryTable();
+}
+
+function updatePhotometryTable() {
+  let table = $('#z-obs-table').DataTable();
+  table.column(13).cells().invalidate().render();
+  table.column(14).cells().invalidate().render();
 }
 
 /*
-  elements:
-    lightcurve (div)
-    aperture (select)
-    gmr (input [number])
-    rmi (input [number])
-
     example colors: g-r=0.56, r-i=0.17
     Solontoi et al. (2010) median colors transformed to PS1 system:
       g-r|SDSS = 0.57 ± 0.06
@@ -370,13 +380,13 @@ function photByTarget(data, elements) {
       r-i|SDSS = 0.24 ± 0.08
       → r-i|P1 = 0.24 mag
 */
-function updatePhotometryPlot(elements) {
-  let lightcurve = $(elements.lightcurve);
-  let aperture = $(elements.aperture);
+function updatePhotometryPlot() {
+  let lightcurve = $('#z-target-lightcurve');
+  let aperture = $('#z-target-lightcurve-aperture');
   let color = {
-    'zg': $(elements.gmr).val(),
+    'zg': $('#z-target-lightcurve-gmr').val(),
     'zr': 0,
-    'zi': -1 * $(elements.rmi).val()
+    'zi': -1 * $('#z-target-lightcurve-rmi').val()
   };
 
   let traces = [];
@@ -508,13 +518,6 @@ $(document).ready(function() {
       .then(data => obsByDate(data));
   });*/
 
-  let lightcurveElements = {
-    lightcurve: '#z-target-lightcurve',
-    aperture: '#z-target-lightcurve-aperture',
-    gmr: '#z-target-lightcurve-gmr',
-    rmi: '#z-target-lightcurve-rmi'
-  };
-
   let url = new URL(window.location.href);
   if (url.searchParams.get('obs-by-target') !== null) {
     // observations by target
@@ -527,7 +530,7 @@ $(document).ready(function() {
 	.then(() => query('obs-by-target', target))
 	.then(data => obsByTarget(data))
 	.then(() => query('phot-by-target', target))
-	.then(data => photByTarget(data, lightcurveElements));
+	.then(data => photByTarget(data));
     } else {
       setup();
     }
@@ -557,12 +560,11 @@ $(document).ready(function() {
   }
 
   $('#z-target-lightcurve-aperture').change(
-    () => updatePhotometryPlot(lightcurveElements));
+    () => updatePhotometry());
   $('#z-target-lightcurve-gmr').change(
-    () => updatePhotometryPlot(lightcurveElements));
+    () => updatePhotometryPlot());
   $('#z-target-lightcurve-rmi').change(
-    () => updatePhotometryPlot(lightcurveElements));
-
+    () => updatePhotometryPlot());
 });
 
 var photometry;
