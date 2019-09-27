@@ -57,7 +57,13 @@ def plot(inf, outf):
     cmap.set_bad('k')
 
     with fits.open(inf) as hdu:
-        im = hdu['COMA'].data
+        # remove after all stacks have been updated to zchecker v2.4.8
+        if 'NIGHTLY' in hdu:
+            nightly = 'NIGHTLY'
+        else:
+            nightly = 'COMA'
+            
+        im = hdu[nightly].data
         blank = im * np.nan
 
         try:

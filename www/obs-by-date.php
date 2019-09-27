@@ -94,6 +94,7 @@ if ($nightId) {
             str_replace(' ', '&nbsp;', 
                         str_replace('-', '&#8209;', 
                                     substr($row['obsdate'], 0, 16))),
+            $row['programid'],
             $row['ra'],
             $row['dec'],
             round(hypot($row['dra'], $row['ddec']), 2),

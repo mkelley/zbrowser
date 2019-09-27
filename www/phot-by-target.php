@@ -62,6 +62,7 @@ if ($objid) {
 
             array_push($data['table'], array(
                 "obsdate" => $row['obsdate'],
+                "programid" => $row['programid'],
                 "rh" => round($rh, 3),
                 "delta" => round($row['delta'], 3),
                 "phase" => round($row['phase'], 1),

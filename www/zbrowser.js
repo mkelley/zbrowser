@@ -222,6 +222,7 @@ function obsByDate(data) {
     columns: [
       { title: 'Target' },
       { title: 'Date (UT)' },
+      { title: 'ProgID' },
       {
 	title: 'RA (hr)',
 	'render': function(data) { return sexagesimal(data / 15, 1, 2).substring(1); }
@@ -296,6 +297,7 @@ function obsByTarget(data) {
     order: [],
     columns: [
       { title: 'Date (UT)' },
+      { title: 'ProgID' },
       {
 	title: 'RA (hr)',
 	'render': function(data) { return sexagesimal(data / 15, 1, 2).substring(1); }
