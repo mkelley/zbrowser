@@ -503,10 +503,6 @@ function updatePhotometryPlot() {
   }
 }
 
-function emptyTable(id) {
-  $(id).html('<table class="table table-striped table-sm" id="z-obs-table" data-page-length="50"><thead class="thead-dark"></thead><tbody></tbody></table>');
-}
-
 function targetSummary(data) {
   let summaryTable = $('#z-target-table');
 
@@ -520,9 +516,8 @@ function targetSummary(data) {
       { title: 'Desg' },
       {	title: 'N obs' },
       { title: 'N nights' },
-      { title: 'Last cov' },
+      { title: 'Last night' },
       { title: 'V<sub>JPL</sub> (mag)' },
-      { title: 'Last obs' },
       { title: 'r<sub>h</sub> (au)' },
       {
 	/* sync column index with aperturePicker */
@@ -545,15 +540,14 @@ function targetSummary(data) {
   let t = summaryTable.DataTable();
   for (let row of data) {
     t.row.add([
-      row['desg'],
+      '<a href="?obs-by-target=' + row['desg'] + '">' + row['desg'].replace(' ', ' ') + '</a>',
       row['nobs'],
       row['nnights'],
       row['last_night'],
-      row['last_vmag'],
-      row['last_phot'],
-      row['last_rh'],
-      row['last_m'],
-      row['last_merr'],
+      row['vmag'],
+      row['rh'],
+      row['m'],
+      row['merr'],
       row['ng'],
       row['nr'],
       row['ni']
@@ -562,22 +556,6 @@ function targetSummary(data) {
 }
 
 $(document).ready(function() {
-/*
-  $('#z-obs-by-target-form').submit(function(e) {
-    e.preventDefault();
-    //emptyTable('#z-obs-table');
-    $('#z-obs-by-target-loading-indicator').addClass('loading');
-    query('obs-by-target', $('#z-target-input').val())
-      .then(data => obsByTarget(data));
-  });
-  $('#z-obs-by-date-form').submit(function(e) {
-    e.preventDefault();
-    emptyTable('#z-obs-table');
-    $('#z-obs-by-date-loading-indicator').addClass('loading');
-    query('obs-by-date', $('#z-date-input').val())
-      .then(data => obsByDate(data));
-  });*/
-
   let url = new URL(window.location.href);
   if (url.searchParams.get('obs-by-target') !== null) {
     // observations by target
