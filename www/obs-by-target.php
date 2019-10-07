@@ -87,12 +87,12 @@ if ($objid) {
                 round($rh, 3),
                 round($row['delta'], 3),
                 round($row['phase'], 1),
-                round($row['tmtp'], 1),
+                round($row['tmtp'], 2),
                 '<a href="' . $url . 'sciimg.fits">sci</a> <a href="'
                 . $url . 'scimrefdiffimg.fits.fz">diff</a>',
                 round(hypot($row['ra3sig'], $row['dec3sig']), 2),
                 round(hypot($row['dx'], $row['dy']), 2),
-                round($row['vmag'], 1),
+                round($row['vmag'], 2),
                 $row['filtercode'],
                 $m,
                 $merr,
@@ -102,9 +102,10 @@ if ($objid) {
     }
 
     $statement = $db->prepare(
-        'SELECT stackfile,filtercode,
-           ROUND(MAX(maglimit),1),ROUND(AVG(rh),3),
-           ROUND(AVG(tmtp), 2)
+        'SELECT stackfile,SUBSTR(obsdate,0,11) AS obsdate,
+           filtercode,ROUND(MAX(maglimit),1) AS maglimit,
+           ROUND(AVG(rh),3) AS rh,ROUND(AVG(tmtp),2) AS tmtp,
+           ROUND(AVG(rh)) AS rh,AVG(ra) AS ra,AVG(dec) AS dec
          FROM ztf_found
          LEFT JOIN ztf_stacks USING (stackid)
          WHERE objid=:objid
@@ -114,8 +115,18 @@ if ($objid) {
     );
     $statement->bindValue(':objid', $objid, SQLITE3_INTEGER);
     if ($result = $statement->execute()) {
-        while ($row = $result->fetchArray(SQLITE3_NUM)) {
-            array_push($data['stacks'], $row);
+        while ($row = $result->fetchArray()) {
+            array_push($data['stacks'], array(
+                "stackfile" => $row['stackfile'],
+                "date" => $row['obsdate'],
+                "filter" => $row['filtercode'],
+                "maglim" => $row['maglimit'],
+                "rh" => $row['rh'],
+                "tmtp" => $row['tmtp'],
+                "sangle" => $row['sangle'],
+                "ra" => $row['ra'],
+                "dec" => $row['dec']
+            ));
         }
     }
 }

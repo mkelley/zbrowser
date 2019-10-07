@@ -101,12 +101,12 @@ if ($nightId) {
             round($rh, 3),
             round($row['delta'], 3),
             round($row['phase'], 1),
-            round($row['tmtp'], 1),
+            round($row['tmtp'], 2),
             '<a href="' . $url . 'sciimg.fits">sci</a> <a href="'
             . $url . 'scimrefdiffimg.fits.fz">diff</a>',
             round(hypot($row['ra3sig'], $row['dec3sig']), 2),
             round(hypot($row['dx'], $row['dy']), 2),
-            round($row['vmag'], 1),
+            round($row['vmag'], 2),
             $row['filtercode'],
             $m,
             $merr,
@@ -116,8 +116,9 @@ if ($nightId) {
 
     $statement = $db->prepare(
         'SELECT stackfile,desg,filtercode,
-           ROUND(MAX(maglimit),1),ROUND(AVG(rh),3),
-           ROUND(AVG(tmtp), 2)
+           ROUND(MAX(maglimit),1) AS maglimit,
+           ROUND(AVG(rh),3) AS rh,ROUND(AVG(tmtp),2) AS tmtp,
+           ROUND(AVG(rh)) AS rh,AVG(ra) AS ra,AVG(dec) AS dec
          FROM ztf_found
          LEFT JOIN ztf_stacks USING (stackid)
          WHERE nightid=:nightid
@@ -126,8 +127,20 @@ if ($nightId) {
     );
     $statement->bindValue(':nightid', $nightId, SQLITE3_INTEGER);
     $result = $statement->execute();
-    while ($row = $result->fetchArray(SQLITE3_NUM)) {
-        array_push($data['stacks'], $row);
+    if ($result = $statement->execute()) {
+        while ($row = $result->fetchArray()) {
+            array_push($data['stacks'], array(
+                "stackfile" => $row['stackfile'],
+                "desg" => $row['desg'],
+                "filter" => $row['filtercode'],
+                "maglim" => $row['maglimit'],
+                "rh" => $row['rh'],
+                "tmtp" => $row['tmtp'],
+                "sangle" => $row['sangle'],
+                "ra" => $row['ra'],
+                "dec" => $row['dec']
+            ));
+        }
     }
 }
 echo(json_encode($data));

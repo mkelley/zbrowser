@@ -54,7 +54,7 @@ function sexagesimal(x, seconds_precision, degrees_width) {
 
 function query(parameter, search) {
   let valid_queries = ['status', 'obs-by-target', 'obs-by-date',
-		       'targets', 'phot-by-target'];
+		       'targets', 'phot-by-target', 'target-summary'];
   if (valid_queries.indexOf(parameter) === -1) {
     throw new Error('Bad internal query: ' + parameter);
   }
@@ -115,6 +115,48 @@ function lightcurveCard(size, title, lc) {
       $('<h5 class="card-header">').append(title), $(lc)
     )
   );
+}
+
+function stackCards(id, data) {
+  let stacks = $(id);
+  stacks.empty();
+
+  for (var i = 0; i < data.length; i++) {
+    let title = '';
+    if ('desg' in data[i]) {
+      title += badge_link(
+	data[i]['desg'],
+	'?obs-by-target=' + data[i]['desg'],
+	'_self',
+	'primary') + ' ';
+    }
+    if ('date' in data[i]) {
+      title += badge(data[i]['date'], 'primary') + ' ';
+    }
+    title += badge(data[i]['filter']) + ' ';
+    title += badge(data[i]['rh'] + ' au') + ' ';
+    title += badge('T–Tp ' + data[i]['tmtp']) + ' ';
+    title += badge('maglim ' + data[i]['maglim']) + ' ';
+    title += badge('⊙ ' + data[i]['sangle'] + '°') + ' ';
+    title += badge_link('PS1', 'http://ps1images.stsci.edu/' + 
+      'cgi-bin/ps1cutouts?pos=' + data[i]['ra'] + '+' + data[i]['dec'] +
+      '&filter=g&filter=r&filter=i&filetypes=stack&auxiliary=data&size=900&' +
+      'output_size=0&verbose=0&autoscale=99.500000', '_blank', 'success');
+
+    let img = 'img/stacks/' + data[i]['stackfile'].replace('.fits', '.png')
+    stacks.append(imageCard(8, title, img));
+  }
+}
+
+function badge(text, context = 'secondary') {
+  let b = '<span class="badge badge-' + context + '" >' + text + '</span>';
+  return b;
+}
+
+function badge_link(text, href, target = '_self', context = 'secondary') {
+  let b = '<a href="' + href + '" target="' + target +
+    '" class="badge badge-' + context + '" >' + text + '</a>';
+  return b;
 }
 
 function newCarousel(id) {
@@ -188,29 +230,12 @@ function obsByDate(data) {
   $('#z-target-lightcurve').empty();
   $('#z-stacks-section').show();
 
-  let stacks = $('#z-stacks');
   let targetTable = $('#z-obs-table');
-
-  stacks.empty();
 
   let tableData;
   if (data['valid'] !== false) {
     tableData = data['table'];
-
-    for (var i = 0; i < data['stacks'].length; i++) {
-      let stack = data['stacks'][i][0];
-      let desg = data['stacks'][i][1];
-      let filter = data['stacks'][i][2];
-      let maglimit = data['stacks'][i][3];
-      let rh = data['stacks'][i][4];
-      let tmtp = data['stacks'][i][5];
-
-      let title = '<a href="?obs-by-target=' + desg + '">' + desg +
-	'</a> (' + filter + ', ' + rh + ' au, T–Tp=' + tmtp + 
-	' maglimit=' + maglimit + ')';
-      let img = 'img/stacks/' + stack.replace('.fits', '.png')
-      stacks.append(imageCard(8, title, img));
-    }
+    stackCards('#z-stacks', data['stacks']);
   } else {
     tableData = [];
   }
@@ -258,33 +283,12 @@ function obsByDate(data) {
 
 function obsByTarget(data) {
   let lcTable = $('#z-lightcurve-table');
-  let stacks = $('#z-stacks');
   let targetTable = $('#z-obs-table');
-
-  stacks.empty();
-
-  //let carousel = newCarousel('z-stack-carousel');
-  //stacks.append(carousel);
 
   let tableData;
   if (data['valid'] !== false) {
     tableData = data['table'];
-
-    for (var i = 0; i < data['stacks'].length; i++) {
-      let stack = data['stacks'][i][0];
-      let date = stack.split('-')[1];
-      date = [date.slice(0, 4), date.slice(4, 6), date.slice(6, 8)].join('-');
-      let filter = data['stacks'][i][1];
-      let maglimit = data['stacks'][i][2];
-      let rh = data['stacks'][i][3];
-      let tmtp = data['stacks'][i][4];
-
-      let title = date + ' (' + filter + ', ' + rh + ' au, T–Tp='
-	+ tmtp + ' maglimit=' + maglimit + ')';
-      let img = 'img/stacks/' + stack.replace('.fits', '.png')
-      stacks.append(imageCard(8, title, img));
-      //addToCarousel(carousel, title, img, i == 0);
-    }
+    stackCards('#z-stacks', data['stacks']);
   } else {
     tableData = [];
   }
@@ -503,6 +507,60 @@ function emptyTable(id) {
   $(id).html('<table class="table table-striped table-sm" id="z-obs-table" data-page-length="50"><thead class="thead-dark"></thead><tbody></tbody></table>');
 }
 
+function targetSummary(data) {
+  let summaryTable = $('#z-target-table');
+
+  summaryTable.DataTable({
+    dom: 'Bfrtip',
+    buttons: ['csv'],
+    destroy: true,
+    data: [],
+    order: [[3, 'desc']],
+    columns: [
+      { title: 'Desg' },
+      {	title: 'N obs' },
+      { title: 'N nights' },
+      { title: 'Last cov' },
+      { title: 'V<sub>JPL</sub> (mag)' },
+      { title: 'Last obs' },
+      { title: 'r<sub>h</sub> (au)' },
+      {
+	/* sync column index with aperturePicker */
+	title: 'm (mag)',
+	'render': (data) => (Object.keys(data).length ? data[
+	  $('#z-target-lightcurve-aperture').val()] : '')
+      },
+      {
+	/* sync column index with aperturePicker */
+	title: 'σ<sub>m</sub> (mag)',
+	'render': (data) => (Object.keys(data).length ? data[
+	  $('#z-target-lightcurve-aperture').val()] : '')
+      },
+      { title: 'N(g)' },
+      { title: 'N(r)' },
+      { title: 'N(i)' }
+    ]
+  });
+
+  let t = summaryTable.DataTable();
+  for (let row of data) {
+    t.row.add([
+      row['desg'],
+      row['nobs'],
+      row['nnights'],
+      row['last_night'],
+      row['last_vmag'],
+      row['last_phot'],
+      row['last_rh'],
+      row['last_m'],
+      row['last_merr'],
+      row['ng'],
+      row['nr'],
+      row['ni']
+    ]).draw(false);
+  }
+}
+
 $(document).ready(function() {
 /*
   $('#z-obs-by-target-form').submit(function(e) {
@@ -558,7 +616,9 @@ $(document).ready(function() {
     setup()
       .then(() => query('status'))
       .then(data => status(data))
-      .then(data => obsByDate(data));
+      .then(data => obsByDate(data))
+      .then(() => query('target-summary'))
+      .then(data => targetSummary(data));
   }
 
   $('#z-target-lightcurve-aperture').change(
