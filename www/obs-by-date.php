@@ -90,7 +90,7 @@ if ($nightId) {
         }
 
         array_push($data['table'], array(
-            str_replace(' ', '&nbsp;', $row['desg']),
+            $row['desg'],
             str_replace(' ', '&nbsp;', 
                         str_replace('-', '&#8209;', 
                                     substr($row['obsdate'], 0, 16))),

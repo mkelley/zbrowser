@@ -77,9 +77,8 @@ if ($objid) {
             }
 
             array_push($data['table'], array(
-                str_replace(' ', '&nbsp;',
-                            str_replace('-', '&#8209;',
-                                        substr($row['obsdate'], 0, 16))),
+                str_replace(' ', '&nbsp;', substr($row['obsdate'], 0, 16)),
+#                            str_replace('-', '&#8209;',
                 $row['programid'],
                 $row['ra'],
                 $row['dec'],

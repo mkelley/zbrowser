@@ -245,7 +245,12 @@ function obsByDate(data) {
     data: tableData,
     order: [],
     columns: [
-      { title: 'Target' },
+      {
+	title: 'Desg',
+	'render': (desg) =>  '<a href="?obs-by-target=' + desg + '">' + desg.replace(' ', ' ') + '</a>',
+	type: 'natural',
+	sort: (desg) => desg.match('([0-9]+)(.*)').slice(1, 3)
+      },
       { title: 'Date (UT)' },
       { title: 'ProgID' },
       {
@@ -510,49 +515,40 @@ function targetSummary(data) {
     dom: 'Bfrtip',
     buttons: ['csv'],
     destroy: true,
-    data: [],
+    data: data,
     order: [[3, 'desc']],
     columns: [
-      { title: 'Desg' },
-      {	title: 'N obs' },
-      { title: 'N nights' },
-      { title: 'Last night' },
-      { title: 'V<sub>JPL</sub> (mag)' },
-      { title: 'r<sub>h</sub> (au)' },
+      {
+	title: 'Desg',
+	data: 'desg',
+	'render': (desg) =>  '<a href="?obs-by-target=' + desg + '">' + desg.replace(' ', ' ') + '</a>',
+	type: 'natural',
+	sort: (desg) => desg.match('([0-9]+)(.*)').slice(1, 3)
+      },
+      {	title: 'N obs', data: 'nobs' },
+      { title: 'N nights', data: 'nnights' },
+      { title: 'Last night', data: 'last_night' },
+      { title: 'V<sub>JPL</sub> (mag)', data: 'vmag' },
+      { title: 'r<sub>h</sub> (au)', data: 'rh' },
       {
 	/* sync column index with aperturePicker */
 	title: 'm (mag)',
+	data: 'm',
 	'render': (data) => (Object.keys(data).length ? data[
 	  $('#z-target-lightcurve-aperture').val()] : '')
       },
       {
 	/* sync column index with aperturePicker */
 	title: 'σ<sub>m</sub> (mag)',
+	data: 'merr',
 	'render': (data) => (Object.keys(data).length ? data[
 	  $('#z-target-lightcurve-aperture').val()] : '')
       },
-      { title: 'N(g)' },
-      { title: 'N(r)' },
-      { title: 'N(i)' }
+      { title: 'N(g)', data: 'ng' },
+      { title: 'N(r)', data: 'nr' },
+      { title: 'N(i)', data: 'ni' }
     ]
   });
-
-  let t = summaryTable.DataTable();
-  for (let row of data) {
-    t.row.add([
-      '<a href="?obs-by-target=' + row['desg'] + '">' + row['desg'].replace(' ', ' ') + '</a>',
-      row['nobs'],
-      row['nnights'],
-      row['last_night'],
-      row['vmag'],
-      row['rh'],
-      row['m'],
-      row['merr'],
-      row['ng'],
-      row['nr'],
-      row['ni']
-    ]).draw(false);
-  }
 }
 
 $(document).ready(function() {
@@ -589,6 +585,7 @@ $(document).ready(function() {
   } else {
     // default: status
     $('#z-pointing-section').show();
+    $('#z-observation-table-section').hide();
     $('#z-lightcurve-section').hide();
     $('#z-summary-loading-indicator').addClass('loading');
     setup()
