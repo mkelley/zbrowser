@@ -2,10 +2,11 @@
 header('Cache-Control:no-cache');
 header('Content-type: application/json');
 
+include 'env.php';
+
 # query fields
 #   target
 parse_str($_SERVER['QUERY_STRING'], $query);
-$db = new SQLite3('/n/oort1/ZTF/zbrowser.db', SQLITE3_OPEN_READONLY);
 
 $data = array();
 $data['valid'] = false;

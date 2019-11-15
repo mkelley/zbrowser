@@ -1,6 +1,6 @@
 <?php
 header('Cache-Control:no-cache');
-$db = new SQLite3('/n/oort1/ZTF/zbrowser.db', SQLITE3_OPEN_READONLY);
+include 'env.php';
 $statement = $db->prepare('SELECT objid,desg FROM obj ORDER BY desg + 0,desg');
 $result = $statement->execute();
 

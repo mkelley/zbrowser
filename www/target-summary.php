@@ -2,7 +2,8 @@
 header('Cache-Control:no-cache');
 header('Content-type: application/json');
 
-$db = new SQLite3('/n/oort1/ZTF/zbrowser.db', SQLITE3_OPEN_READONLY);
+include 'env.php';
+
 $statement = $db->prepare('SELECT * FROM obj_summary ORDER BY desg + 0,desg');
 
 # hard coded apertures for zchecker 2.4.3
