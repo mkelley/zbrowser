@@ -1,5 +1,14 @@
-.open /oort1/ZTF/zchecker.db
-ATTACH DATABASE '/oort1/ZTF/new_zbrowser.db' AS zb;
+#!/bin/bash
+# usage: dump-foundobs.sh zchecker.db new.db
+
+if [[ -z "$1" || -z "$2" ]]
+then
+  echo "Usage: dump-foundobs.sh zchecker.db new.db";
+  exit 1;
+fi
+
+sqlite3 $1 <<EOF
+ATTACH DATABASE "${2}" AS zb;
 CREATE TABLE IF NOT EXISTS zb.ztf_found(
        foundid INTEGER PRIMARY KEY,
        objid INTEGER KEY,
@@ -108,3 +117,5 @@ CREATE TABLE IF NOT EXISTS zb.ztf_stacks(
        stackfile TEXT
 );
 INSERT OR IGNORE INTO zb.ztf_stacks SELECT stackid,stackfile FROM ztf_stacks;
+EOF
+

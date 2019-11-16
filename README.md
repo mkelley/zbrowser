@@ -4,28 +4,29 @@ Setup
 -----
 
 1. Create directory structure for website.
+
+   `mkdir -p site/img/{pointing,stacks}`
+
    * site/
      * img/
-       * lightcurves/
        * pointing/
        * stacks/
-2. Copy www/* to site/ directory.
-3. Copy scripts/dump-foundobs.sql to your favorite location.  Edit the first two lines to use the correct paths.
-4. Edit zbrowser/www/targets.php, zbrowser/www/status.php and zbrowser/www/obs-by-date.php to point to the correct path of zbrowser.db.
+
+2. Copy zbrower/www/* to site/ directory.
+3. Move site/env-template.php to site/env.php.  Edit env.php to use the correct values.
 
 Daily
 -----
 
 After zchecker, zproject, zstack, and zphot:
 ```
-export ZBSR=/path/to/zbrowser
-export ZDATA=/path/to/zchecker/output
-export ZWEB=/path/to/web/site
-(cd $ZDATA; sqlite3 < /path/to/dump-foundobs.sql)
-python3 ${ZBSR}/scripts/pointing.py --frame=equatorial ${ZWEB}/img/pointing
-python3 ${ZBSR}/scripts/pointing.py --frame=ecliptic ${ZWEB}/img/pointing
-python3 ${ZBSR}/scripts/pointing.py --frame=galactic ${ZWEB}/img/pointing
-python3 ${ZBSR}/scripts/stack2web.py ${ZWEB}/img/stacks
+source zchecker.env
+${ZBROWSER_SCRIPTS}/dump-foundobs.sh ${ZDATA}/zchecker.db ${ZDATA}/new_zbrowser.db && \
+mv ${ZDATA}/{new_zbrowser,zbrowser}.db
+python3 ${ZBROWSER_SCRIPTS}/scripts/pointing.py --frame=equatorial ${ZWEB}/img/pointing
+python3 ${ZBROWSER_SCRIPTS}/scripts/pointing.py --frame=ecliptic ${ZWEB}/img/pointing
+python3 ${ZBROWSER_SCRIPTS}/scripts/pointing.py --frame=galactic ${ZWEB}/img/pointing
+python3 ${ZBROWSER_SCRIPTS}/scripts/stack2web.py ${ZWEB}/img/stacks
 ```
 
 Occasionally
@@ -36,22 +37,21 @@ night of data.  When other nights need to be stacked or images need to
 be replotted:
 
 ```
-export ZWEB=/path/to/web/site
-export ZBSR=/path/to/zbrowser
+source zchecker.env
 
 # replot missing images for one target:
-python3 ${ZBSR}/scripts/stack2web.py --desg='C/2016 R2' ${ZWEB}/img/stacks
+python3 ${ZBROWSER_SCRIPTS}/scripts/stack2web.py --desg='C/2016 R2' ${ZWEB}/img/stacks
 
 # replot all images for one target:
-python3 ${ZBSR}/scripts/stack2web.py --desg='C/2016 R2' -f ${ZWEB}/img/stacks
+python3 ${ZBROWSER_SCRIPTS}/scripts/stack2web.py --desg='C/2016 R2' -f ${ZWEB}/img/stacks
 
 # similarly for one date:
-python3 ${ZBSR}/scripts/stack2web.py --date=2018-08-23 ${ZWEB}/img/stacks
-python3 ${ZBSR}/scripts/stack2web.py --date=2018-08-23 -f ${ZWEB}/img/stacks
+python3 ${ZBROWSER_SCRIPTS}/scripts/stack2web.py --date=2018-08-23 ${ZWEB}/img/stacks
+python3 ${ZBROWSER_SCRIPTS}/scripts/stack2web.py --date=2018-08-23 -f ${ZWEB}/img/stacks
 
 # or, for all dates all targets:
-python3 ${ZBSR}/scripts/stack2web.py --full-update ${ZWEB}/img/stacks
+python3 ${ZBROWSER_SCRIPTS}/scripts/stack2web.py --full-update ${ZWEB}/img/stacks
 
 # force update all images:
-python3 ${ZBSR}/scripts/stack2web.py --full-update -f ${ZWEB}/img/stacks
+python3 ${ZBROWSER_SCRIPTS}/scripts/stack2web.py --full-update -f ${ZWEB}/img/stacks
 ```
