@@ -13,7 +13,10 @@ Setup
        * stacks/
 
 2. Copy zbrower/www/* to site/ directory.
-3. Move site/env-template.php to site/env.php.  Edit env.php to use the correct values.
+
+3. Move site/env-template.php to site/env.php.  The default values in
+   env.php should work.
+
 
 Daily
 -----

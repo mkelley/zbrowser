@@ -1,6 +1,6 @@
 <?php
 header('Cache-Control:no-cache');
-$db = new SQLite3('/n/oort1/ZTF/zbrowser.db', SQLITE3_OPEN_READONLY);
+include 'env.php';
 $data = array();
 
 $data['nights'] = $db->querySingle(
