@@ -7,7 +7,7 @@ import numpy as np
 
 def stacks_by_date(z, date):
     rows = z.db.iterate_over('''
-    SELECT stackfile FROM ztf_stacks
+    SELECT DISTINCT stackfile FROM ztf_stacks
     LEFT JOIN ztf_cutouts USING (stackid)
     LEFT JOIN found USING (foundid)
     LEFT JOIN ztf USING (obsid)
@@ -67,23 +67,24 @@ def plot(inf, outf):
         blank = im * np.nan
 
         try:
-            ref = hdu['COMA REF'].data
-            ref -= sigma_clipped_stats(ref)[1]
+            ref = hdu['NIGHTLY REF'].data
+            ref -= sigma_clipped_stats(ref[np.isfinite(ref)])[1]
         except KeyError:
             ref = blank
 
         try:
             baseline = hdu['COMA BL'].data
             diff = im - baseline
-            mms = sigma_clipped_stats(diff)
+            mms = sigma_clipped_stats(diff[np.isfinite(diff)])
         except KeyError:
             baseline = blank
             diff = blank
-            mms = sigma_clipped_stats(im)
+            mms = sigma_clipped_stats(im[np.isfinite(im)])
 
         try:
             ref_baseline = hdu['COMA REF BL'].data
-            ref_baseline -= sigma_clipped_stats(ref_baseline)[1]
+            ref_baseline -= sigma_clipped_stats(
+                ref_baseline[np.isfinite(ref_baseline)])[1]
             ref_diff = ref - ref_baseline
         except KeyError:
             ref_baseline = blank
