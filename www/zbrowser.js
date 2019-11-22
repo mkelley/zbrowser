@@ -190,6 +190,82 @@ function addToCarousel(carousel, caption, img, active=false) {
   inner.append(item);
 }
 
+/* Halley-Marcus phase function approximation.  phase in deg. */
+function Phi(phase) {
+  const p = [6.08574208e-13, -1.87340401e-10,  1.95993776e-08, 
+	     -9.53710066e-07, 1.90128133e-04, -1.79339842e-02,
+	     -1.47528434e-03];
+  let y = 0;
+  for (const v in p) {
+    y += y * phase + v;
+  }
+  return y;
+}
+
+function median(x) {
+  let y = x.sort();
+  let mid = Math.floor(y.length / 2);
+  return y.length % 2 !== 0 ? x[mid] : (x[mid - 1] + x[mid]) / 2;
+}
+
+function stdev(x) {
+  let s;
+  if (x.length == 1) {
+    s = 0;
+  } else {
+    const m = median(x);
+    s = Math.sqrt(x.reduce((sum, next) => sum + (next - m)**2)
+		  / (x.length - 1));
+  }
+  return s;
+}
+
+/* Returns indices of good (unclipped) values */
+function sigmaClip(a, sigma=2) {
+  const m = median(a);
+  const s = stdev(a);
+  const d = a.map(y => (y - m) / s);
+  const good = a.map(x => x <= sigma);
+  return good;
+}
+
+function weightedMean(a, err) {
+  const weights = err.map(x => x**-2);
+  const wa = a.map((x, i) => x * weights[i]);
+  const sw = weights.reduce((sum, next) => sum + next);
+  const wm = a.reduce((sum, next) => sum + next) / sw;
+  const we = Math.sqrt(1 / sw);
+  return [wm, we];
+}
+
+function ostat(rh, delta, phase, m, merr) {
+  if ((m === null) || (m === NaN) || (merr === NaN)) {
+    return null;
+  }
+  
+  // scale magnitudes by geometry to last value, then difference
+  let dm = m.map(
+    (x, i) => 
+      x - 10 * Math.log10(rh[i]) - 5 * Math.log10(delta[i])
+      + 2.5 * Math.log10(Phi(phase[i]));
+  );
+  dm = dm.map(x => x - dm[dm.length - 1]);
+  
+  // reject outliers
+  const good = sigmaClip(dm.slice(0, dm.length - 1), merr);
+  const MFiltered = good.map((keep, i) => keep ? dm[i] : null)
+    .filter(x => x !== null);
+  const merrFiltered = good.map((keep, i) => keep ? merr[i] : null)
+    .filter(x => x !== null);
+
+  // calculate weighted mean
+  const [mBaseline, mBaselineErr] = weightedMean(MFiltered, merrFiltered);
+  
+  // outburst statistic is change in brightness normalized by uncertainty
+  const unc = Math.max(Math.sqrt(mBaselineErr**2 + merr[last]**2), 0.1);
+  return mBaseline / unc;
+}
+
 function status(data) {
   let ul = $('#z-summary-list');
   let li = $('<li>').append('Nights in database: ' + data['nights']);
