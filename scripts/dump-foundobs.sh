@@ -49,13 +49,15 @@ CREATE TABLE IF NOT EXISTS zb.ztf_found(
        flux BLOB,
        m BLOB,
        merr BLOB,
-       flag INTEGER
+       flag INTEGER,
+       ostat FLOAT
 );
 CREATE UNIQUE INDEX IF NOT EXISTS zb.ztf_found_objid_obsid ON ztf_found(obsid,objid);
 INSERT OR IGNORE INTO zb.ztf_found
 SELECT foundid,objid,obsid,desg,nightid,obsdate,ra,dec,dra,ddec,ra3sig,dec3sig,
   vmag,rh,rdot,delta,phase,sangle,trueanomaly,tmtp,infobits,filtercode,filefracday,field,
-  ccdid,qid,seeing,maglimit,programid,stackid,dx,dy,bgap,bg,bg_area,bg_stdev,flux,m,merr,flag
+  ccdid,qid,seeing,maglimit,programid,stackid,dx,dy,bgap,bg,bg_area,bg_stdev,flux,m,merr,
+  flag,ostat
 FROM ztf_found
 LEFT JOIN ztf_cutouts USING (foundid)
 LEFT JOIN obj USING (objid)
@@ -85,12 +87,13 @@ CREATE TABLE IF NOT EXISTS zb.obj_summary(
        rh FLOAT,
        m FLOAT,
        merr FLOAT,
+       ostat FLOAT,
        ng INTEGER,
        nr INTEGER,
        ni INTEGER
 );
 INSERT OR REPLACE INTO zb.obj_summary
-SELECT objid,desg,nobs,nnights,SUBSTR(last_night,1,10),last_vmag,last_rh,last_m,last_merr,ng,nr,ni
+SELECT objid,desg,nobs,nnights,SUBSTR(last_night,1,10),last_vmag,last_rh,last_m,last_merr,last_ostat,ng,nr,ni
 FROM zb.ztf_found
 JOIN (
      SELECT 
@@ -100,6 +103,7 @@ JOIN (
 	    t1.rh as last_rh,
 	    t1.m as last_m,
 	    t1.merr as last_merr,
+            t1.ostat as last_ostat,
 	    nobs,nnights,ng,nr,ni
      FROM zb.ztf_found t1
      JOIN (

@@ -159,6 +159,14 @@ function badge_link(text, href, target = '_self', context = 'secondary') {
   return b;
 }
 
+/* Return empty string for null values */
+function formatNumber(value, fixed) {
+  if (value === null)
+    return '';
+  else
+    return Number(value).toFixed(fixed);
+}
+
 function newCarousel(id) {
   let carousel = $('<div id="carouselExampleControls" class="carousel slide col-sm-12 col-lg-8" style="margin-bottom: 5em;" data-ride="carousel"></div>');
   carousel.append($('<div class="carousel-inner"></div>'));
@@ -245,10 +253,10 @@ function ostat(rh, delta, phase, m, merr) {
   
   // scale magnitudes by geometry to last value, then difference
   let dm = m.map(
-    (x, i) => 
+    (x, i) => (
       x - 10 * Math.log10(rh[i]) - 5 * Math.log10(delta[i])
-      + 2.5 * Math.log10(Phi(phase[i]));
-  );
+      + 2.5 * Math.log10(Phi(phase[i]))
+  ));
   dm = dm.map(x => x - dm[dm.length - 1]);
   
   // reject outliers
@@ -355,7 +363,11 @@ function obsByDate(data) {
 	title: 'σ<sub>m</sub> (mag)',
 	'render': (data) => (Object.keys(data).length ? data['5'] : '')
       },
-      { title: 'Flag' }
+      { title: 'Flag' },
+      { 
+	title: 'OStat',
+	render: x => formatNumber(x, 1)
+      }
     ]
   });
 
@@ -413,7 +425,11 @@ function obsByTarget(data) {
 	'render': (data) => (Object.keys(data).length ? data[
 	  $('#z-target-lightcurve-aperture').val()] : '')
       },
-      { title: 'Flag' }
+      { title: 'Flag' },
+      { 
+	title: 'OStat',
+	render: x => formatNumber(x, 1)
+      }
     ]
   });
 
@@ -619,6 +635,11 @@ function targetSummary(data) {
 	data: 'merr',
 	'render': (data) => (Object.keys(data).length ? data[
 	  $('#z-target-lightcurve-aperture').val()] : '')
+      },
+      { 
+	title: 'OStat', 
+	data: 'ostat', 
+	render: x => formatNumber(x, 1) 
       },
       { title: 'N(g)', data: 'ng' },
       { title: 'N(r)', data: 'nr' },

@@ -76,6 +76,7 @@ if ($objid) {
                 "m" => $m,
                 "merr" => $merr,
                 "flag" => $row['flag'],
+                "ostat" => $row['ostat'],
                 "infobits" => $row['infobits']
             ));
         }

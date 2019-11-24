@@ -96,7 +96,8 @@ if ($objid) {
                 $row['filtercode'],
                 $m,
                 $merr,
-                $row['flag']
+                $row['flag'],
+                $row['ostat']
             ));
         }
     }

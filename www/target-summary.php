@@ -37,6 +37,7 @@ if ($result = $statement->execute()) {
             "rh" => round($row["rh"], 2),
             "m" => $m,
             "merr" => $merr,
+            "ostat" => $row['ostat'],
             "ng" => $row["ng"],
             "nr" => $row["nr"],
             "ni" => $row["ni"]
