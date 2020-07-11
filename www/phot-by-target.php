@@ -72,6 +72,7 @@ if ($objid) {
                 "cenOffset" => round(hypot($row['dx'], $row['dy']), 2),
                 "V" => round($row['vmag'], 2),
                 "filter" => $row['filtercode'],
+                "airmass" => $row['airmass'],
                 "seeing" => $row['seeing'],
                 "m" => $m,
                 "merr" => $merr,
