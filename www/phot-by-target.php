@@ -78,7 +78,8 @@ if ($objid) {
                 "merr" => $merr,
                 "flag" => $row['flag'],
                 "ostat" => $row['ostat'],
-                "infobits" => $row['infobits']
+                "infobits" => $row['infobits'],
+                "archivefile" => $row['archivefile']
             ));
         }
     }

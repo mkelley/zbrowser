@@ -51,14 +51,15 @@ CREATE TABLE IF NOT EXISTS zb.ztf_found(
        m BLOB,
        merr BLOB,
        flag INTEGER,
-       ostat FLOAT
+       ostat FLOAT,
+       archivefile TEXT
 );
 CREATE UNIQUE INDEX IF NOT EXISTS zb.ztf_found_objid_obsid ON ztf_found(obsid,objid);
 INSERT OR IGNORE INTO zb.ztf_found
 SELECT foundid,objid,obsid,desg,nightid,obsdate,ra,dec,dra,ddec,ra3sig,dec3sig,
   vmag,rh,rdot,delta,phase,sangle,trueanomaly,tmtp,infobits,filtercode,filefracday,field,
   ccdid,qid,airmass,seeing,maglimit,programid,stackid,dx,dy,bgap,bg,bg_area,bg_stdev,flux,
-  m,merr,flag,ostat
+  m,merr,flag,ostat,archivefile
 FROM ztf_found
 LEFT JOIN ztf_cutouts USING (foundid)
 LEFT JOIN obj USING (objid)
