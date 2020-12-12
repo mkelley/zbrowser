@@ -120,12 +120,12 @@ if ($nightId) {
         'SELECT stackfile,desg,filtercode,
            ROUND(MAX(maglimit),1) AS maglimit,
            ROUND(AVG(rh),3) AS rh,ROUND(AVG(tmtp),2) AS tmtp,
-           ROUND(AVG(rh)) AS rh,AVG(ra) AS ra,AVG(dec) AS dec
+           AVG(ra) AS ra,AVG(dec) AS dec,ROUND(AVG(vmag),1) AS vmag
          FROM ztf_found
          LEFT JOIN ztf_stacks USING (stackid)
          WHERE nightid=:nightid
            AND stackfile NOT NULL
-         GROUP BY stackid ORDER BY desg+0,desg'
+         GROUP BY stackid ORDER BY vmag'
     );
     $statement->bindValue(':nightid', $nightId, SQLITE3_INTEGER);
     $result = $statement->execute();
