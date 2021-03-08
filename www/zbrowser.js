@@ -137,7 +137,9 @@ function stackCards(id, data) {
     title += badge(data[i]['rh'] + ' au') + ' ';
     title += badge('T–Tp ' + data[i]['tmtp']) + ' ';
     title += badge('maglim ' + data[i]['maglim']) + ' ';
-    title += badge('⊙ ' + data[i]['sangle'] + '°') + ' ';
+    title += badge('sangle ' + data[i]['sangle'] + '°') + ' ';
+    title += badge('V ' + data[i]['vmag']) + ' ';
+    title += badge('ostat ' + data[i]['ostat']) + ' ';
     title += badge_link('PS1', 'http://ps1images.stsci.edu/' + 
       'cgi-bin/ps1cutouts?pos=' + data[i]['ra'] + '+' + data[i]['dec'] +
       '&filter=g&filter=r&filter=i&filetypes=stack&auxiliary=data&size=900&' +
