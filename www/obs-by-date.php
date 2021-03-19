@@ -126,7 +126,7 @@ if ($nightId) {
          LEFT JOIN ztf_stacks USING (stackid)
          WHERE nightid=:nightid
            AND stackfile NOT NULL
-         GROUP BY stackid ORDER BY vmag - COALESCE(ostat, 0)'
+         GROUP BY stackid ORDER BY vmag - ABS(COALESCE(ostat, 0))'
     );
     $statement->bindValue(':nightid', $nightId, SQLITE3_INTEGER);
     $result = $statement->execute();
