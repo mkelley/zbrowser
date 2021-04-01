@@ -2,59 +2,59 @@
 'use strict';
 
 function sexagesimal(x, seconds_precision, degrees_width) {
-    /* 
-       seconds_precision : integer
-         decimals after the point, default 3.
-       
-       degrees_width : integer
-         Zero pad the degrees place to this width.  The default is
-         no padding.
-    */
-    if (seconds_precision === undefined) {
-      seconds_precision = 3;
-    }
+  /* 
+     seconds_precision : integer
+       decimals after the point, default 3.
+     
+     degrees_width : integer
+       Zero pad the degrees place to this width.  The default is
+       no padding.
+  */
+  if (seconds_precision === undefined) {
+    seconds_precision = 3;
+  }
 
-    let sign = (x < 0)?'-':'+';
-    let d = Math.floor(Math.abs(x));
-    let m = Math.floor((Math.abs(x) - d) * 60);
-    let s = ((Math.abs(x) - d) * 60 - m) * 60;
+  let sign = (x < 0) ? '-' : '+';
+  let d = Math.floor(Math.abs(x));
+  let m = Math.floor((Math.abs(x) - d) * 60);
+  let s = ((Math.abs(x) - d) * 60 - m) * 60;
 
-    let factor = Math.pow(10, seconds_precision);
-    s = Math.round(s * factor) / factor;
-    if (s >= 60) {
-      s -= 60;
-      m += 1;
-    }
-    
-    if (m >= 60) {
-      m -= 60;
-      d += 1;
-    }
-    
-    d = d.toFixed(0);
-    m = m.toFixed(0);
-    s = s.toFixed(seconds_precision);
-    
-    if (degrees_width === undefined) {
-      d = sign + d;
-    } else {
-      d = sign + '0'.repeat(degrees_width - d.length) + d;
-    }
-    
-    m = '0'.repeat(2 - m.length) + m;
+  let factor = Math.pow(10, seconds_precision);
+  s = Math.round(s * factor) / factor;
+  if (s >= 60) {
+    s -= 60;
+    m += 1;
+  }
 
-    if (seconds_precision == 0) {
-      s = '0'.repeat(2 - s.length) + s;
-    } else {
-      s = '0'.repeat(2 - s.length + seconds_precision + 1) + s;
-    }
+  if (m >= 60) {
+    m -= 60;
+    d += 1;
+  }
 
-    return d + ':' + m + ':' + s;
+  d = d.toFixed(0);
+  m = m.toFixed(0);
+  s = s.toFixed(seconds_precision);
+
+  if (degrees_width === undefined) {
+    d = sign + d;
+  } else {
+    d = sign + '0'.repeat(degrees_width - d.length) + d;
+  }
+
+  m = '0'.repeat(2 - m.length) + m;
+
+  if (seconds_precision == 0) {
+    s = '0'.repeat(2 - s.length) + s;
+  } else {
+    s = '0'.repeat(2 - s.length + seconds_precision + 1) + s;
+  }
+
+  return d + ':' + m + ':' + s;
 }
 
 function query(parameter, search) {
   let valid_queries = ['status', 'obs-by-target', 'obs-by-date',
-		       'targets', 'phot-by-target', 'target-summary'];
+    'targets', 'phot-by-target', 'target-summary'];
   if (valid_queries.indexOf(parameter) === -1) {
     throw new Error('Bad internal query: ' + parameter);
   }
@@ -66,18 +66,18 @@ function query(parameter, search) {
     q = "?date=" + encodeURIComponent(search);
   }
 
-  return new Promise(function(resolve, reject) {
+  return new Promise(function (resolve, reject) {
     let request = new XMLHttpRequest();
     let url = parameter + '.php' + q;
-    
+
     request.open('GET', url);
     request.responseType = 'json';
-    request.onload = function() {
+    request.onload = function () {
       if (request.status === 200) {
-	resolve(request.response);
+        resolve(request.response);
       } else {
-	reject(Error('Data did not successfully load: '
-		     + request.statusText));
+        reject(Error('Data did not successfully load: '
+          + request.statusText));
       }
     };
     request.send();
@@ -86,13 +86,13 @@ function query(parameter, search) {
 
 function setup() {
   return query('targets').then(
-    function(targets) {
+    function (targets) {
       let dataList = $('#targets')[0];
-      $.each(targets, function(objid, desg) {
-	let option = document.createElement('option');
-	option.value = desg;
-	option.dataset.objid = objid;
-	dataList.appendChild(option);
+      $.each(targets, function (objid, desg) {
+        let option = document.createElement('option');
+        option.value = desg;
+        option.dataset.objid = objid;
+        dataList.appendChild(option);
       });
     }
   );
@@ -103,7 +103,7 @@ function imageCard(size, title, img) {
     $('<div class="card">').append(
       $('<h5 class="card-header">').append(title),
       $('<a href="' + img + '">').append(
-	$('<img class="card-img-top" src="' + img + '">')
+        $('<img class="card-img-top" src="' + img + '">')
       )
     )
   );
@@ -125,10 +125,10 @@ function stackCards(id, data) {
     let title = '';
     if ('desg' in data[i]) {
       title += badge_link(
-	data[i]['desg'],
-	'?obs-by-target=' + data[i]['desg'],
-	'_self',
-	'primary') + ' ';
+        data[i]['desg'],
+        '?obs-by-target=' + data[i]['desg'],
+        '_self',
+        'primary') + ' ';
     }
     if ('date' in data[i]) {
       title += badge(data[i]['date'], 'primary') + ' ';
@@ -140,12 +140,12 @@ function stackCards(id, data) {
     title += badge('sangle ' + data[i]['sangle'] + '°') + ' ';
     title += badge('V ' + data[i]['vmag']) + ' ';
     title += badge('ostat ' + data[i]['ostat']) + ' ';
-    title += badge_link('PS1', 'http://ps1images.stsci.edu/' + 
+    title += badge_link('PS1', 'http://ps1images.stsci.edu/' +
       'cgi-bin/ps1cutouts?pos=' + data[i]['ra'] + '+' + data[i]['dec'] +
       '&filter=g&filter=r&filter=i&filetypes=stack&auxiliary=data&size=900&' +
       'output_size=0&verbose=0&autoscale=99.500000', '_blank', 'success');
 
-    let img = 'img/stacks/' + data[i]['stackfile'].replace('.fits', '.png')
+    let img = 'img/stacks/' + data[i]['stackfile'].replace('.fits', '.jpg')
     stacks.append(imageCard(8, title, img));
   }
 }
@@ -186,25 +186,25 @@ function newCarousel(id) {
   return carousel;
 }
 
-function addToCarousel(carousel, caption, img, active=false) {
+function addToCarousel(carousel, caption, img, active = false) {
   let inner = carousel.find('div.carousel-inner');
   let item = $(
     '<div class="carousel-item'
-      + (active ? ' active' : '')
-      + '"></div>');
+    + (active ? ' active' : '')
+    + '"></div>');
 
 
   item.append($('<h5>' + caption + '</h5>'));
   item.append($('<img class="d-block w-100" src="' + img + '">'));
-  
+
   inner.append(item);
 }
 
 /* Halley-Marcus phase function approximation.  phase in deg. */
 function Phi(phase) {
-  const p = [6.08574208e-13, -1.87340401e-10,  1.95993776e-08, 
-	     -9.53710066e-07, 1.90128133e-04, -1.79339842e-02,
-	     -1.47528434e-03];
+  const p = [6.08574208e-13, -1.87340401e-10, 1.95993776e-08,
+    -9.53710066e-07, 1.90128133e-04, -1.79339842e-02,
+    -1.47528434e-03];
   let y = 0;
   for (const v in p) {
     y += y * phase + v;
@@ -224,14 +224,14 @@ function stdev(x) {
     s = 0;
   } else {
     const m = median(x);
-    s = Math.sqrt(x.reduce((sum, next) => sum + (next - m)**2)
-		  / (x.length - 1));
+    s = Math.sqrt(x.reduce((sum, next) => sum + (next - m) ** 2)
+      / (x.length - 1));
   }
   return s;
 }
 
 /* Returns indices of good (unclipped) values */
-function sigmaClip(a, sigma=2) {
+function sigmaClip(a, sigma = 2) {
   const m = median(a);
   const s = stdev(a);
   const d = a.map(y => (y - m) / s);
@@ -240,7 +240,7 @@ function sigmaClip(a, sigma=2) {
 }
 
 function weightedMean(a, err) {
-  const weights = err.map(x => x**-2);
+  const weights = err.map(x => x ** -2);
   const wa = a.map((x, i) => x * weights[i]);
   const sw = weights.reduce((sum, next) => sum + next);
   const wm = a.reduce((sum, next) => sum + next) / sw;
@@ -252,15 +252,15 @@ function ostat(rh, delta, phase, m, merr) {
   if ((m === null) || (m === NaN) || (merr === NaN)) {
     return null;
   }
-  
+
   // scale magnitudes by geometry to last value, then difference
   let dm = m.map(
     (x, i) => (
       x - 10 * Math.log10(rh[i]) - 5 * Math.log10(delta[i])
       + 2.5 * Math.log10(Phi(phase[i]))
-  ));
+    ));
   dm = dm.map(x => x - dm[dm.length - 1]);
-  
+
   // reject outliers
   const good = sigmaClip(dm.slice(0, dm.length - 1), merr);
   const MFiltered = good.map((keep, i) => keep ? dm[i] : null)
@@ -270,9 +270,9 @@ function ostat(rh, delta, phase, m, merr) {
 
   // calculate weighted mean
   const [mBaseline, mBaselineErr] = weightedMean(MFiltered, merrFiltered);
-  
+
   // outburst statistic is change in brightness normalized by uncertainty
-  const unc = Math.max(Math.sqrt(mBaselineErr**2 + merr[last]**2), 0.1);
+  const unc = Math.max(Math.sqrt(mBaselineErr ** 2 + merr[last] ** 2), 0.1);
   return mBaseline / unc;
 }
 
@@ -280,8 +280,8 @@ function status(data) {
   let ul = $('#z-summary-list');
   let li = $('<li>').append('Nights in database: ' + data['nights']);
   let subul = $('<ul>')
-      .append($('<li>').append('With data: ' + data['nights with data']))
-      .append($('<li>').append('Most recent night checked: ' + data['most recent night checked']));
+    .append($('<li>').append('With data: ' + data['nights with data']))
+    .append($('<li>').append('Most recent night checked: ' + data['most recent night checked']));
   li.append(subul);
   ul.append(li);
 
@@ -302,10 +302,10 @@ function status(data) {
     pointing.append(imageCard(
       4, frame,
       'img/pointing/' + data['most recent night checked'] + '-'
-	+ frames[frame]	+ '.png'
+      + frames[frame] + '.png'
     ));
   }
-  
+
   $('#z-summary-loading-indicator').removeClass('loading');
 
   return query('obs-by-date', data['most recent night checked']);
@@ -325,27 +325,27 @@ function obsByDate(data) {
   } else {
     tableData = [];
   }
-  
+
   targetTable.DataTable({
     destroy: true,
     data: tableData,
     order: [],
     columns: [
       {
-	title: 'Desg',
-	'render': (desg) =>  '<a href="?obs-by-target=' + desg + '">' + desg.replace(' ', ' ') + '</a>',
-	type: 'natural',
-	sort: (desg) => desg.match('([0-9]+)(.*)').slice(1, 3)
+        title: 'Desg',
+        'render': (desg) => '<a href="?obs-by-target=' + desg + '">' + desg.replace(' ', ' ') + '</a>',
+        type: 'natural',
+        sort: (desg) => desg.match('([0-9]+)(.*)').slice(1, 3)
       },
       { title: 'Date (UT)' },
       { title: 'ProgID' },
       {
-	title: 'RA (hr)',
-	'render': function(data) { return sexagesimal(data / 15, 1, 2).substring(1); }
+        title: 'RA (hr)',
+        'render': function (data) { return sexagesimal(data / 15, 1, 2).substring(1); }
       },
       {
-	title: 'Dec (deg)',
-	'render': function(data) { return sexagesimal(data, 0, 2); }
+        title: 'Dec (deg)',
+        'render': function (data) { return sexagesimal(data, 0, 2); }
       },
       { title: '&mu; (arcsec/hr)' },
       { title: 'r<sub>h</sub> (au)' },
@@ -358,17 +358,17 @@ function obsByDate(data) {
       { title: 'V<sub>JPL</sub> (mag)' },
       { title: 'Filter' },
       {
-	title: 'm(5") (mag)',
-	'render': (data) => (Object.keys(data).length ? data['5'] : '')
+        title: 'm(5") (mag)',
+        'render': (data) => (Object.keys(data).length ? data['5'] : '')
       },
       {
-	title: 'σ<sub>m</sub> (mag)',
-	'render': (data) => (Object.keys(data).length ? data['5'] : '')
+        title: 'σ<sub>m</sub> (mag)',
+        'render': (data) => (Object.keys(data).length ? data['5'] : '')
       },
       { title: 'Flag' },
-      { 
-	title: 'OStat',
-	render: x => formatNumber(x, 1)
+      {
+        title: 'OStat',
+        render: x => formatNumber(x, 1)
       }
     ]
   });
@@ -398,12 +398,12 @@ function obsByTarget(data) {
       { title: 'Date (UT)' },
       { title: 'ProgID' },
       {
-	title: 'RA (hr)',
-	'render': function(data) { return sexagesimal(data / 15, 1, 2).substring(1); }
+        title: 'RA (hr)',
+        'render': function (data) { return sexagesimal(data / 15, 1, 2).substring(1); }
       },
       {
-	title: 'Dec (deg)',
-	'render': function(data) { return sexagesimal(data, 0, 2); }
+        title: 'Dec (deg)',
+        'render': function (data) { return sexagesimal(data, 0, 2); }
       },
       { title: '&mu; (arcsec/hr)' },
       { title: 'r<sub>h</sub> (au)' },
@@ -416,21 +416,21 @@ function obsByTarget(data) {
       { title: 'V<sub>JPL</sub> (mag)' },
       { title: 'Filter' },
       {
-	/* sync column index with aperturePicker */
-	title: 'm (mag)',
-	'render': (data) => (Object.keys(data).length ? data[
-	  $('#z-target-lightcurve-aperture').val()] : '')
+        /* sync column index with aperturePicker */
+        title: 'm (mag)',
+        'render': (data) => (Object.keys(data).length ? data[
+          $('#z-target-lightcurve-aperture').val()] : '')
       },
       {
-	/* sync column index with aperturePicker */
-	title: 'σ<sub>m</sub> (mag)',
-	'render': (data) => (Object.keys(data).length ? data[
-	  $('#z-target-lightcurve-aperture').val()] : '')
+        /* sync column index with aperturePicker */
+        title: 'σ<sub>m</sub> (mag)',
+        'render': (data) => (Object.keys(data).length ? data[
+          $('#z-target-lightcurve-aperture').val()] : '')
       },
       { title: 'Flag' },
-      { 
-	title: 'OStat',
-	render: x => formatNumber(x, 1)
+      {
+        title: 'OStat',
+        render: x => formatNumber(x, 1)
       }
     ]
   });
@@ -440,7 +440,7 @@ function obsByTarget(data) {
 
 
 function whereFilterIs(name, filter) {
-  return function(element, index) {
+  return function (element, index) {
     return filter[index] == name;
   };
 }
@@ -503,7 +503,7 @@ function updatePhotometryPlot() {
   if (photometry['valid'] !== false) {
     let i = aperture.val();
     let phot = photometry['table'];
-    
+
     let jpl = {
       v: [],
       tmtp: []
@@ -518,12 +518,12 @@ function updatePhotometryPlot() {
       jpl.tmtp.push(row['tmtp']);
 
       if (row['m'][i] == 0) {
-	// some magnitudes are zero
-	continue;
+        // some magnitudes are zero
+        continue;
       }
       if (row['merr'][i] > 0.2) {
-	// some uncertainties are too big
-	continue;
+        // some uncertainties are too big
+        continue;
       }
       tmtp.push(row['tmtp']);
       filter.push(row['filter']);
@@ -537,27 +537,27 @@ function updatePhotometryPlot() {
       y: jpl.v,
       mode: 'markers',
       marker: {
-	color: 'black',
-	symbol: 'x'
+        color: 'black',
+        symbol: 'x'
       },
       type: 'scatter'
     });
 
     let zg = whereFilterIs('zg', filter);
     Plotly.addTraces(lightcurve[0], {
-      name: 'g' + (color['zg']<0?"+":"-") + Math.abs(color['zg']),
+      name: 'g' + (color['zg'] < 0 ? "+" : "-") + Math.abs(color['zg']),
       x: tmtp.filter(zg),
       y: m.filter(zg),
       error_y: {
-	type: "data",
-	array: merr.filter(zg),
-	visible: true,
-	color: 'gray'
+        type: "data",
+        array: merr.filter(zg),
+        visible: true,
+        color: 'gray'
       },
       mode: 'markers',
       marker: {
-	color: 'green',
-	symbol: 'circle'
+        color: 'green',
+        symbol: 'circle'
       },
       type: 'scatter'
     });
@@ -568,34 +568,34 @@ function updatePhotometryPlot() {
       x: tmtp.filter(zr),
       y: m.filter(zr),
       error_y: {
-	type: "data",
-	array: merr.filter(zr),
-	visible: true,
-	color: 'gray'
+        type: "data",
+        array: merr.filter(zr),
+        visible: true,
+        color: 'gray'
       },
       mode: 'markers',
       marker: {
-	color: 'orange',
-	symbol: 'square'
+        color: 'orange',
+        symbol: 'square'
       },
       type: 'scatter'
     });
 
     let zi = whereFilterIs('zi', filter);
     Plotly.addTraces(lightcurve[0], {
-      name: 'i' + (color['zi']<0?"+":"-") + Math.abs(color['zi']),
+      name: 'i' + (color['zi'] < 0 ? "+" : "-") + Math.abs(color['zi']),
       x: tmtp.filter(zi),
       y: m.filter(zi),
       error_y: {
-	type: "data",
-	array: merr.filter(zi),
-	visible: true,
-	color: 'gray'
+        type: "data",
+        array: merr.filter(zi),
+        visible: true,
+        color: 'gray'
       },
       mode: 'markers',
       marker: {
-	color: 'red',
-	symbol: 'triangle-up'
+        color: 'red',
+        symbol: 'triangle-up'
       },
       type: 'scatter'
     });
@@ -613,35 +613,35 @@ function targetSummary(data) {
     order: [[3, 'desc']],
     columns: [
       {
-	title: 'Desg',
-	data: 'desg',
-	'render': (desg) =>  '<a href="?obs-by-target=' + desg + '">' + desg.replace(' ', ' ') + '</a>',
-	type: 'natural',
-	sort: (desg) => desg.match('([0-9]+)(.*)').slice(1, 3)
+        title: 'Desg',
+        data: 'desg',
+        'render': (desg) => '<a href="?obs-by-target=' + desg + '">' + desg.replace(' ', ' ') + '</a>',
+        type: 'natural',
+        sort: (desg) => desg.match('([0-9]+)(.*)').slice(1, 3)
       },
-      {	title: 'N obs', data: 'nobs' },
+      { title: 'N obs', data: 'nobs' },
       { title: 'N nights', data: 'nnights' },
       { title: 'Last night', data: 'last_night' },
       { title: 'V<sub>JPL</sub> (mag)', data: 'vmag' },
       { title: 'r<sub>h</sub> (au)', data: 'rh' },
       {
-	/* sync column index with aperturePicker */
-	title: 'm (mag)',
-	data: 'm',
-	'render': (data) => (Object.keys(data).length ? data[
-	  $('#z-target-lightcurve-aperture').val()] : '')
+        /* sync column index with aperturePicker */
+        title: 'm (mag)',
+        data: 'm',
+        'render': (data) => (Object.keys(data).length ? data[
+          $('#z-target-lightcurve-aperture').val()] : '')
       },
       {
-	/* sync column index with aperturePicker */
-	title: 'σ<sub>m</sub> (mag)',
-	data: 'merr',
-	'render': (data) => (Object.keys(data).length ? data[
-	  $('#z-target-lightcurve-aperture').val()] : '')
+        /* sync column index with aperturePicker */
+        title: 'σ<sub>m</sub> (mag)',
+        data: 'merr',
+        'render': (data) => (Object.keys(data).length ? data[
+          $('#z-target-lightcurve-aperture').val()] : '')
       },
-      { 
-	title: 'OStat', 
-	data: 'ostat', 
-	render: x => formatNumber(x, 1) 
+      {
+        title: 'OStat',
+        data: 'ostat',
+        render: x => formatNumber(x, 1)
       },
       { title: 'N(g)', data: 'ng' },
       { title: 'N(r)', data: 'nr' },
@@ -650,7 +650,7 @@ function targetSummary(data) {
   });
 }
 
-$(document).ready(function() {
+$(document).ready(function () {
   let url = new URL(window.location.href);
   if (url.searchParams.get('obs-by-target') !== null) {
     // observations by target
@@ -660,10 +660,10 @@ $(document).ready(function() {
       let target = url.searchParams.get('obs-by-target');
       $('#z-target-input').val(target);
       setup()
-	.then(() => query('obs-by-target', target))
-	.then(data => obsByTarget(data))
-	.then(() => query('phot-by-target', target))
-	.then(data => photByTarget(data));
+        .then(() => query('obs-by-target', target))
+        .then(data => obsByTarget(data))
+        .then(() => query('phot-by-target', target))
+        .then(data => photByTarget(data));
     } else {
       setup();
     }
@@ -676,8 +676,8 @@ $(document).ready(function() {
       $('#z-date-input').val(date);
       $('#z-obs-by-date-loading-indicator').addClass('loading');
       setup()
-	.then(() => query('obs-by-date', date))
-	.then(data => obsByDate(data));
+        .then(() => query('obs-by-date', date))
+        .then(data => obsByDate(data));
     } else {
       setup();
     }

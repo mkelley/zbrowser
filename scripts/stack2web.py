@@ -1,6 +1,6 @@
+import numpy as np
 import matplotlib
 matplotlib.use('agg')
-import numpy as np
 
 ########################################################################
 
@@ -62,7 +62,7 @@ def plot(inf, outf):
             nightly = 'NIGHTLY'
         else:
             nightly = 'COMA'
-            
+
         im = hdu[nightly].data
         blank = im * np.nan
 
@@ -90,7 +90,8 @@ def plot(inf, outf):
             ref_baseline = blank
             ref_diff = blank
 
-        opts = dict(cmap=cmap, vmin=-2 * mms[2], vmax=10 * mms[2], origin='lower')
+        opts = dict(cmap=cmap, vmin=-2 *
+                    mms[2], vmax=10 * mms[2], origin='lower')
         axes[0].imshow(im, **opts)
         axes[1].imshow(baseline, **opts)
         axes[2].imshow(diff, **opts)
@@ -106,7 +107,8 @@ def plot(inf, outf):
             axes[i].plot(x[2:], x[2:], color='0.75')
             axes[i].plot(x[2:][::-1], x[:2], color='0.75')
 
-    plt.setp(axes, frame_on=False, xticks=[], yticks=[])
+    plt.setp(axes, frame_on=False, xticks=[], yticks=[], xlim=[75, 225],
+             ylim=[75, 225])
     fig.savefig(outf, dpi=200)
     plt.close()
 
@@ -187,7 +189,7 @@ if __name__ == '__main__':
             for row in stacks[i]:
                 stack = row[0]
                 inf = os.path.join(path, stack)
-                basename = stack.replace('.fits', '.png')
+                basename = stack.replace('.fits', '.jpg')
                 outf = os.path.join(args.destination, basename)
                 try:
                     check_path(outf)
