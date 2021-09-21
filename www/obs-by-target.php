@@ -36,12 +36,6 @@ if ($objid) {
     );
     $statement->bindValue(':objid', $objid, SQLITE3_INTEGER);
 
-    # hard coded apertures for zchecker 2.4.3
-    # 18 by pixel, 5 by projected size
-    $apertures = array(
-        2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
-        10000, 20000, 30000, 40000, 50000);
-
     if ($result = $statement->execute()) {
         while($row = $result->fetchArray()) {
             $foundid = $row['foundid'];
@@ -66,8 +60,8 @@ if ($objid) {
                 $m = array();
                 $merr = array();
             } else {
-                $phots = array_map(null, $apertures, unpack('f23', $row['m']),
-                                   unpack('f23', $row['merr']));
+                $phots = array_map(null, $apertures, unpack($unpack, $row['m']),
+                                   unpack($unpack, $row['merr']));
                 $m = array();
                 $merr = array();
                 foreach ($phots as &$phot) {
