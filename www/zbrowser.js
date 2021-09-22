@@ -656,6 +656,7 @@ $(document).ready(function () {
     // observations by target
     $('#z-pointing-section').hide();
     $('#z-lightcurve-section').show();
+    $('#z-stacks-section').show();
     if (url.searchParams.get('obs-by-target') != "") {
       let target = url.searchParams.get('obs-by-target');
       $('#z-target-input').val(target);
@@ -671,6 +672,7 @@ $(document).ready(function () {
     // observations by date
     $('#z-pointing-section').show();
     $('#z-lightcurve-section').hide();
+    $('#z-stacks-section').show();
     if (url.searchParams.get('obs-by-date') != "") {
       let date = url.searchParams.get('obs-by-date');
       $('#z-date-input').val(date);
@@ -681,10 +683,51 @@ $(document).ready(function () {
     } else {
       setup();
     }
+  } else if (url.searchParams.get('sfr') !== null) {
+    // Super-fast rotator survey
+    const sfrTargets = [
+      '11300',
+      '31029',
+      '36596',
+      '42382',
+      '44145',
+      '45720',
+      '52839',
+      '59075',
+      '68303',
+      '79131',
+      '80928',
+      '85837',
+      '100489',
+      '120742',
+      '245392',
+      '267812',
+      '292169',
+      '298340',
+      '327715',
+      '351283',
+      '376297',
+      '440479',
+      '2012 QZ50',
+      '2012 TS132',
+      '2015 OQ71',
+    ];
+    $('#z-pointing-section').hide();
+    $('#z-observation-table-section').hide();
+    $('#z-lightcurve-section').hide();
+    $('#z-summary-loading-indicator').addClass('loading');
+    $('#z-stacks-section').hide();
+    setup()
+      .then(() => query('target-summary'))
+      .then(data => targetSummary(data.filter(
+        row => sfrTargets.indexOf(row['desg']) >= 0
+      )))
+      .then(() => $('#z-summary-loading-indicator').removeClass('loading'));
   } else {
     // default: status
     $('#z-pointing-section').show();
     $('#z-observation-table-section').hide();
+    $('#z-stacks-section').show();
     $('#z-lightcurve-section').hide();
     $('#z-summary-loading-indicator').addClass('loading');
     setup()
