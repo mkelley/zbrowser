@@ -1,6 +1,10 @@
+from copy import copy
 import numpy as np
-import matplotlib
-matplotlib.use('agg')
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+from astropy.io import fits
+from astropy.stats import sigma_clipped_stats
+mpl.use('agg')
 
 ########################################################################
 
@@ -42,18 +46,13 @@ def all_stacks(z):
 
 
 def plot(inf, outf):
-    import matplotlib as mpl
-    import matplotlib.pyplot as plt
-    from astropy.io import fits
-    from astropy.stats import sigma_clipped_stats
-
     fig = plt.figure(1, (6, 4))
     fig.clear()
     axes = [fig.add_subplot(gs) for gs in
             plt.GridSpec(2, 3, wspace=0, hspace=0, left=0, right=1,
                          bottom=0, top=1)]
 
-    cmap = mpl.cm.get_cmap('viridis')
+    cmap = copy(mpl.cm.get_cmap('viridis'))
     cmap.set_bad('k')
 
     with fits.open(inf) as hdu:
