@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS zb.ztf_found(
        desg TEXT,
        nightid INTEGER KEY,
        obsdate TEXT,
+       obsjd FLOAT,
        ra FLOAT,
        dec FLOAT,
        dra FLOAT,
@@ -57,7 +58,7 @@ CREATE TABLE IF NOT EXISTS zb.ztf_found(
 );
 CREATE UNIQUE INDEX IF NOT EXISTS zb.ztf_found_objid_obsid ON ztf_found(obsid,objid);
 INSERT OR IGNORE INTO zb.ztf_found
-SELECT foundid,objid,obsid,desg,nightid,obsdate,ra,dec,dra,ddec,ra3sig,dec3sig,
+SELECT foundid,objid,obsid,desg,nightid,obsdate,obsjd,ra,dec,dra,ddec,ra3sig,dec3sig,
   vmag,rh,rdot,delta,phase,sangle,trueanomaly,tmtp,infobits,filtercode,filefracday,field,
   ccdid,qid,airmass,seeing,maglimit,programid,stackid,dx,dy,bgap,bg,bg_area,bg_stdev,flux,
   m,merr,flag,m5,ostat,archivefile
@@ -104,6 +105,7 @@ JOIN (
 	    last_night,
 	    t1.vmag as last_vmag,
 	    t1.rh as last_rh,
+	    t1.m5 as last_m5,
 	    t1.m as last_m,
 	    t1.merr as last_merr,
             t1.ostat as last_ostat,
