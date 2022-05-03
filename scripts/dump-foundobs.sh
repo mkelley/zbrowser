@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS zb.ztf_found(
        foundid INTEGER PRIMARY KEY,
        objid INTEGER KEY,
        obsid INTEGER KEY,
+       pid INTEGER,
        desg TEXT,
        nightid INTEGER KEY,
        obsdate TEXT,
@@ -58,7 +59,7 @@ CREATE TABLE IF NOT EXISTS zb.ztf_found(
 );
 CREATE UNIQUE INDEX IF NOT EXISTS zb.ztf_found_objid_obsid ON ztf_found(obsid,objid);
 INSERT OR IGNORE INTO zb.ztf_found
-SELECT foundid,objid,obsid,desg,nightid,obsdate,obsjd,ra,dec,dra,ddec,ra3sig,dec3sig,
+SELECT foundid,objid,obsid,pid,desg,nightid,obsdate,obsjd,ra,dec,dra,ddec,ra3sig,dec3sig,
   vmag,rh,rdot,delta,phase,sangle,trueanomaly,tmtp,infobits,filtercode,filefracday,field,
   ccdid,qid,airmass,seeing,maglimit,programid,stackid,dx,dy,bgap,bg,bg_area,bg_stdev,flux,
   m,merr,flag,m5,ostat,archivefile
@@ -84,6 +85,8 @@ SELECT nightid,date,exposures,quads FROM ztf_nights;
 CREATE TABLE IF NOT EXISTS zb.obj_summary(
        objid INTEGER PRIMARY KEY,
        desg TEXT,
+       first_ephemeris_update TEXT,
+       last_ephemeris_update TEXT,
        nobs INTEGER,
        nnights INTEGER,
        last_night TEXT,
@@ -97,7 +100,7 @@ CREATE TABLE IF NOT EXISTS zb.obj_summary(
        ni INTEGER
 );
 INSERT OR REPLACE INTO zb.obj_summary
-SELECT objid,desg,nobs,nnights,SUBSTR(last_night,1,10),last_vmag,last_rh,last_m,last_merr,last_ostat,ng,nr,ni
+SELECT objid,desg,first_ephemeris_update,last_ephemeris_update,nobs,nnights,SUBSTR(last_night,1,10),last_vmag,last_rh,last_m,last_merr,last_ostat,ng,nr,ni
 FROM zb.ztf_found
 JOIN (
      SELECT 
@@ -120,6 +123,10 @@ JOIN (
 	  FROM zb.ztf_found WHERE m NOT NULL GROUP BY objid) t2
      ON t1.objid = t2.objid AND t1.obsdate = t2.last_night
 ) USING (objid)
+JOIN (SELECT objid,MIN(retrieved) as first_ephemeris_update,
+        MAX(retrieved) as last_ephemeris_update
+      FROM eph GROUP BY objid) t3
+USING (objid)
 GROUP BY objid;
 
 CREATE TABLE IF NOT EXISTS zb.ztf_stacks(
