@@ -87,46 +87,41 @@ CREATE TABLE IF NOT EXISTS zb.obj_summary(
        desg TEXT,
        first_ephemeris_update TEXT,
        last_ephemeris_update TEXT,
-       nobs INTEGER,
        nnights INTEGER,
-       last_night TEXT,
-       vmag FLOAT,
-       rh FLOAT,
-       m FLOAT,
-       merr FLOAT,
-       ostat FLOAT,
+       first_night_covered TEXT,
+       last_night_covered TEXT,
+       nobs INTEGER,
+       first_night_detected TEXT,
+       last_night_detected TEXT,
+       ndet INTEGER,
        ng INTEGER,
        nr INTEGER,
        ni INTEGER
 );
+
+CREATE TEMPORARY TABLE ephemeris_update AS
+SELECT objid,
+       MIN(retrieved) as first,
+       MAX(retrieved) as last
+FROM eph GROUP BY objid;
+
 INSERT OR REPLACE INTO zb.obj_summary
-SELECT objid,desg,first_ephemeris_update,last_ephemeris_update,nobs,nnights,SUBSTR(last_night,1,10),last_vmag,last_rh,last_m,last_merr,last_ostat,ng,nr,ni
-FROM zb.ztf_found
-JOIN (
-     SELECT 
-     	    t1.objid,
-	    last_night,
-	    t1.vmag as last_vmag,
-	    t1.rh as last_rh,
-	    t1.m5 as last_m5,
-	    t1.m as last_m,
-	    t1.merr as last_merr,
-            t1.ostat as last_ostat,
-	    nobs,nnights,ng,nr,ni
-     FROM zb.ztf_found t1
-     JOIN (
-     	  SELECT objid,MAX(obsdate) AS last_night,
-	         COUNT() AS nobs,COUNT(DISTINCT nightid) AS nnights,
-		 SUM(filtercode = 'zg') AS ng,
-		 SUM(filtercode = 'zr') AS nr,
-		 SUM(filtercode = 'zi') AS ni
-	  FROM zb.ztf_found WHERE m NOT NULL GROUP BY objid) t2
-     ON t1.objid = t2.objid AND t1.obsdate = t2.last_night
-) USING (objid)
-JOIN (SELECT objid,MIN(retrieved) as first_ephemeris_update,
-        MAX(retrieved) as last_ephemeris_update
-      FROM eph GROUP BY objid) t3
-USING (objid)
+SELECT zf.objid,
+       desg,
+       temp.ephemeris_update.first,
+       temp.ephemeris_update.last,
+       COUNT(DISTINCT nightid) as nnights,
+       SUBSTR(MIN(obsdate),1,10) AS first_night_covered,
+       SUBSTR(MAX(obsdate),1,10) AS last_night_covered,
+       COUNT() AS nobs,
+       SUBSTR(MIN(IIF(m5 < maglimit,obsdate,NULL)),1,10) AS first_night_detected,
+       SUBSTR(MAX(IIF(m5 < maglimit,obsdate,NULL)),1,10) AS last_night_detected,
+       SUM(m5 < maglimit) AS ndet,
+       SUM(filtercode = 'zg' AND m5 < maglimit) AS ng,
+       SUM(filtercode = 'zr' AND m5 < maglimit) AS nr,
+       SUM(filtercode = 'zi' AND m5 < maglimit) AS ni
+FROM zb.ztf_found AS zf
+JOIN temp.ephemeris_update USING (objid)
 GROUP BY objid;
 
 CREATE TABLE IF NOT EXISTS zb.ztf_stacks(
